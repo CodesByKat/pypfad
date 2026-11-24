@@ -1,0 +1,200 @@
+# Vokabeln: Befehle, Funktionen und Begriffe.
+# id: eindeutiger Schluessel (wird in Lektionen unter "vocab" referenziert)
+# term: was auf der Karte steht, meaning: Bedeutung, example: kurzes Beispiel
+- id: range
+  term: "range(start, stop, step)"
+  meaning: "Zahlenfolge von start bis stop-1 (stop ist nie dabei)"
+  example: "list(range(2, 8, 2))  # [2, 4, 6]"
+- id: enumerate
+  term: "enumerate(liste)"
+  meaning: "Liefert Paare (Position, Wert) für eine Schleife"
+  example: |
+    for i, name in enumerate(["a", "b"]):
+        print(i, name)
+- id: zip
+  term: "zip(a, b)"
+  meaning: "Läuft über mehrere Listen gleichzeitig, paarweise"
+  example: |
+    for f, w in zip(["alter", "bmi"], [42, 23.5]):
+        print(f, w)
+- id: fstring
+  term: "f\"{wert:.2f}\""
+  meaning: "f-String: Werte in Text einsetzen, :.2f = 2 Nachkommastellen"
+  example: "print(f\"Genauigkeit: {acc:.2f}\")"
+- id: dict-items
+  term: "d.items()"
+  meaning: "Schlüssel-Wert-Paare eines Dicts, z. B. für Schleifen"
+  example: |
+    for k, v in scores.items():
+        print(k, v)
+- id: dict-get
+  term: "d.get(key, default)"
+  meaning: "Wert zum Schlüssel oder default, falls er fehlt (kein KeyError)"
+  example: "zaehler[x] = zaehler.get(x, 0) + 1"
+- id: listcomp
+  term: "[ausdruck for x in liste if bedingung]"
+  meaning: "List Comprehension: neue Liste in einer Zeile bauen und filtern"
+  example: "gerade = [x for x in werte if x % 2 == 0]"
+- id: dictcomp
+  term: "{k: v for k, v in ...}"
+  meaning: "Dict Comprehension: Dict in einer Zeile bauen"
+  example: "laengen = {n: len(n) for n in namen}"
+- id: def-return
+  term: "def f(x): return ..."
+  meaning: "Funktion definieren; return gibt das Ergebnis zurück (ohne return: None)"
+  example: |
+    def quadrat(x):
+        return x * x
+- id: default-param
+  term: "def f(x, faktor=1)"
+  meaning: "Parameter mit Standardwert, beim Aufruf optional"
+  example: "skaliere(werte)  /  skaliere(werte, faktor=10)"
+- id: return-tuple
+  term: "return a, b"
+  meaning: "Mehrere Werte zurückgeben (als Tupel) und direkt entpacken"
+  example: "lo, hi = min_max(werte)"
+- id: break-continue
+  term: "break / continue"
+  meaning: "break beendet die Schleife ganz, continue springt zum nächsten Durchlauf"
+  example: |
+    for w in werte:
+        if w is None:
+            continue
+- id: product
+  term: "itertools.product(a, b)"
+  meaning: "Alle Kombinationen aus mehreren Listen, ersetzt verschachtelte Schleifen"
+  example: |
+    from itertools import product
+    for tiefe, lr in product([2, 4], [0.1, 0.01]):
+        print(tiefe, lr)
+- id: nested-listcomp
+  term: "[[... for j in b] for i in a]"
+  meaning: "Verschachtelte Comprehension: Liste von Listen (z. B. Tabelle)"
+  example: "[[i * j for j in range(3)] for i in range(2)]"
+- id: name-main
+  term: "if __name__ == \"__main__\":"
+  meaning: "Code läuft nur beim direkten Start der Datei, nicht beim Import"
+  example: |
+    if __name__ == "__main__":
+        main()
+- id: str-split
+  term: "text.split(\",\")"
+  meaning: "Text an einem Trennzeichen in eine Liste zerlegen"
+  example: "\"setosa,5.1\".split(\",\")  # ['setosa', '5.1']"
+- id: splitlines
+  term: "text.strip().splitlines()"
+  meaning: "Text in Zeilen zerlegen (strip entfernt Leerzeilen am Rand)"
+  example: "zeilen = rohtext.strip().splitlines()[1:]  # ohne Kopfzeile"
+- id: round-format
+  term: "round(x, 3)"
+  meaning: "Zahl auf 3 Nachkommastellen runden"
+  example: "round(0.912345, 3)  # 0.912"
+- id: X-y
+  term: "X, y"
+  meaning: "X = Feature-Tabelle (2D: Zeilen × Spalten), y = Zielwerte (1D)"
+  example: "X, y = load_iris(return_X_y=True)"
+- id: shape
+  term: ".shape"
+  meaning: "Form eines Arrays/DataFrames: (Zeilen, Spalten)"
+  example: "X.shape  # (150, 4)"
+- id: train_test_split
+  term: "train_test_split(X, y, test_size=0.2)"
+  meaning: "Teilt Daten in Train und Test. Rückgabe: X_train, X_test, y_train, y_test"
+  example: |
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y)
+- id: random_state
+  term: "random_state=42"
+  meaning: "Fester Zufalls-Startwert: Ergebnisse sind reproduzierbar"
+  example: "train_test_split(X, y, random_state=42)"
+- id: stratify
+  term: "stratify=y"
+  meaning: "Klassenanteile in Train und Test gleich halten"
+  example: "train_test_split(X, y, stratify=y)"
+- id: fit
+  term: ".fit(X, y)"
+  meaning: "Lernen: Modell trainieren bzw. Kennzahlen eines Transformers berechnen"
+  example: "modell.fit(X_train, y_train)"
+- id: transform
+  term: ".transform(X)"
+  meaning: "Gelernte Umrechnung auf Daten anwenden (ohne neu zu lernen)"
+  example: "X_test_s = scaler.transform(X_test)"
+- id: fit_transform
+  term: ".fit_transform(X)"
+  meaning: "fit + transform in einem Schritt, nur für Trainingsdaten!"
+  example: "X_train_s = scaler.fit_transform(X_train)"
+- id: predict
+  term: ".predict(X)"
+  meaning: "Vorhersagen für neue Daten"
+  example: "y_pred = modell.predict(X_test)"
+- id: score
+  term: ".score(X, y)"
+  meaning: "Bewertung, bei Klassifikation die Genauigkeit (accuracy)"
+  example: "modell.score(X_test, y_test)"
+- id: StandardScaler
+  term: "StandardScaler()"
+  meaning: "Skaliert jede Spalte auf Mittelwert 0 und Standardabweichung 1"
+  example: "from sklearn.preprocessing import StandardScaler"
+- id: data-leakage
+  term: "Data Leakage"
+  meaning: "Infos aus Test-/Zukunftsdaten fließen ins Training, die Bewertung wird zu optimistisch"
+  example: "# falsch: scaler.fit(X) VOR dem Split"
+- id: Pipeline
+  term: "Pipeline([(name, objekt), ...])"
+  meaning: "Verkettet benannte Schritte (Vorverarbeitung + Modell) zu einem Objekt"
+  example: |
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("modell", LogisticRegression()),
+    ])
+- id: make_pipeline
+  term: "make_pipeline(a, b)"
+  meaning: "Pipeline ohne eigene Namen; Namen = Klassenname klein"
+  example: "make_pipeline(StandardScaler(), SVC())"
+- id: named_steps
+  term: "pipe.named_steps[\"name\"]"
+  meaning: "Zugriff auf einen Schritt der Pipeline (auch: pipe[\"name\"])"
+  example: "pipe.named_steps[\"scaler\"].mean_"
+- id: ColumnTransformer
+  term: "ColumnTransformer([(name, trafo, spalten), ...])"
+  meaning: "Unterschiedliche Vorverarbeitung für verschiedene Spaltengruppen"
+  example: |
+    ColumnTransformer([
+        ("num", StandardScaler(), ["alter"]),
+        ("cat", OneHotEncoder(), ["stadt"]),
+    ])
+- id: OneHotEncoder
+  term: "OneHotEncoder()"
+  meaning: "Kategorien → je eine 0/1-Spalte pro Kategorie"
+  example: "from sklearn.preprocessing import OneHotEncoder"
+- id: SimpleImputer
+  term: "SimpleImputer(strategy=\"median\")"
+  meaning: "Füllt fehlende Werte (NaN) auf, z. B. mit dem Median"
+  example: "from sklearn.impute import SimpleImputer"
+- id: handle_unknown
+  term: "handle_unknown=\"ignore\""
+  meaning: "OneHotEncoder: unbekannte Kategorien bei Vorhersage → Nullen statt Fehler"
+  example: "OneHotEncoder(handle_unknown=\"ignore\")"
+- id: cross_val_score
+  term: "cross_val_score(modell, X, y, cv=5)"
+  meaning: "Cross-Validation: ein Score pro Fold"
+  example: "cross_val_score(pipe, X, y, cv=5).mean()"
+- id: GridSearchCV
+  term: "GridSearchCV(pipe, param_grid, cv=5)"
+  meaning: "Probiert alle Parameter-Kombinationen mit Cross-Validation durch"
+  example: |
+    suche = GridSearchCV(pipe, param_grid, cv=5)
+    suche.fit(X_train, y_train)
+- id: param-grid-names
+  term: "\"schritt__parameter\""
+  meaning: "Parameter eines Pipeline-Schritts im param_grid: zwei Unterstriche!"
+  example: "{\"knn__n_neighbors\": [3, 5, 7]}"
+- id: best_params_
+  term: "suche.best_params_"
+  meaning: "Beste gefundene Parameter-Kombination"
+  example: "print(suche.best_params_)"
+- id: best_estimator_
+  term: "suche.best_estimator_"
+  meaning: "Das mit den besten Parametern neu trainierte Modell bzw. die Pipeline"
+  example: "suche.best_estimator_.predict(X_test)"

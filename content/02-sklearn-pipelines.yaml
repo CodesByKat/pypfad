@@ -1,0 +1,660 @@
+id: sklearn
+title: "scikit-learn: Splits & Pipelines"
+emoji: "🤖"
+description: "Train-Test-Split, Data Leakage, benannte Pipelines, ColumnTransformer, GridSearch"
+lessons:
+
+  # ------------------------------------------------------------------
+  - id: sklearn-1
+    title: "X, y und der Train-Test-Split"
+    vocab: [X-y, train_test_split, random_state, stratify, shape]
+    intro: |
+      Jedes überwachte ML-Problem hat zwei Teile:
+
+      - `X`: die **Features**, eine Tabelle mit einer Zeile pro Beobachtung (Form: `(n_zeilen, n_spalten)`)
+      - `y`: das **Ziel**, ein Wert pro Zeile
+
+      Bevor wir ein Modell trainieren, legen wir einen Teil der Daten als **Testdaten** zur Seite. Nur so können wir ehrlich prüfen, wie gut das Modell bei **neuen** Daten ist.
+    exercises:
+      - type: info
+        text: |
+          scikit-learn bringt kleine Beispiel-Datensätze mit, z. B. die Iris-Blumen: 150 Blüten, 4 Messwerte, 3 Arten.
+        code: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import train_test_split
+
+          X, y = load_iris(return_X_y=True)
+          print("X:", X.shape, " y:", y.shape)
+
+          X_train, X_test, y_train, y_test = train_test_split(
+              X, y, test_size=0.2, random_state=42, stratify=y
+          )
+          print("Train:", X_train.shape, " Test:", X_test.shape)
+        run: true
+
+      - type: mc
+        question: "Warum teilen wir die Daten in Trainings- und Testdaten?"
+        options:
+          - "Um zu messen, wie gut das Modell mit Daten klarkommt, die es beim Training nicht gesehen hat"
+          - "Damit das Training schneller geht"
+          - "Weil scikit-learn sonst einen Fehler wirft"
+          - "Um mehr Trainingsdaten zu bekommen"
+        answer: 0
+        explain: "Auf den Trainingsdaten sieht fast jedes Modell gut aus (es kann sie auswendig lernen). Erst die Testdaten zeigen die echte Leistung."
+
+      - type: cloze
+        question: "Teile 20 % als Testdaten ab, reproduzierbar und mit gleichen Klassenanteilen."
+        code: |
+          X_train, X_test, y_train, y_test = ___(
+              X, y, test_size=___, random_state=42, ___=y
+          )
+        answers: ["train_test_split", "0.2", "stratify"]
+        distractors: ["split", "20", "shuffle", "0.8"]
+        explain: "`test_size=0.2` heißt 20 % Test. `stratify=y` sorgt dafür, dass jede Klasse in Train und Test gleich häufig vorkommt."
+
+      - type: mc
+        question: "In welcher Reihenfolge gibt `train_test_split(X, y)` die Teile zurück?"
+        options:
+          - "`X_train, X_test, y_train, y_test`"
+          - "`X_train, y_train, X_test, y_test`"
+          - "`X_test, X_train, y_test, y_train`"
+          - "`X_train, X_test`"
+        answer: 0
+        explain: "Merksatz: **erst alle X, dann alle y**, jeweils erst Train, dann Test."
+
+      - type: predict
+        question: "Ein Datensatz hat 200 Zeilen. Wie viele Zeilen hat `X_test` bei `test_size=0.25`?"
+        code: |
+          X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+          print(len(X_test))
+        options: ["50", "150", "25", "0.25"]
+        answer: 0
+
+      - type: mc
+        question: "Was bewirkt `random_state=42`?"
+        options:
+          - "Die zufällige Aufteilung ist bei jedem Lauf gleich, also reproduzierbar"
+          - "Es werden 42 Zeilen für den Test genommen"
+          - "Das Modell wird 42-mal trainiert"
+          - "Es werden 42 % der Daten gemischt"
+        answer: 0
+        explain: "Die Zahl selbst ist egal. Wichtig ist, dass sie fest ist. Dann bekommst du (und andere) exakt dieselbe Aufteilung."
+
+      - type: vocab
+        id: stratify
+
+      - type: code
+        question: |
+          Lade Iris und teile **30 %** als Testdaten ab, **stratifiziert**, mit `random_state=0`.
+          Gib danach die Shapes von `X_train` und `X_test` aus.
+        starter: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import train_test_split
+
+          X, y = load_iris(return_X_y=True)
+
+          # dein Code
+        solution: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import train_test_split
+
+          X, y = load_iris(return_X_y=True)
+
+          X_train, X_test, y_train, y_test = train_test_split(
+              X, y, test_size=0.3, random_state=0, stratify=y
+          )
+          print(X_train.shape, X_test.shape)
+        hint: "`train_test_split(X, y, test_size=0.3, random_state=0, stratify=y)`"
+        tests: |
+          import numpy as np
+          assert X_train.shape == (105, 4), f"X_train sollte (105, 4) sein, ist {X_train.shape}"
+          assert X_test.shape == (45, 4), f"X_test sollte (45, 4) sein, ist {X_test.shape}"
+          assert list(np.bincount(y_test)) == [15, 15, 15], "Die Klassen im Test sind nicht gleich verteilt. stratify=y vergessen?"
+
+      - type: vocab
+        id: train_test_split
+
+  # ------------------------------------------------------------------
+  - id: sklearn-2
+    title: "fit, transform, predict und Data Leakage"
+    vocab: [fit, transform, fit_transform, predict, score, StandardScaler, data-leakage]
+    intro: |
+      Alle scikit-learn-Objekte sprechen dieselbe Sprache:
+
+      - **Modelle** (Estimator): `fit(X, y)` lernt, `predict(X)` sagt vorher, `score(X, y)` bewertet
+      - **Transformer** (z. B. Scaler): `fit(X)` lernt Kennzahlen, `transform(X)` wendet sie an
+
+      Die wichtigste Regel: **Gelernt (fit) wird nur auf den Trainingsdaten.** Sonst sickern Infos aus dem Test ins Training: *Data Leakage*.
+    exercises:
+      - type: info
+        text: |
+          Der `StandardScaler` lernt beim `fit` Mittelwert und Standardabweichung jeder Spalte und rechnet beim `transform` jede Spalte auf Mittelwert 0 und Streuung 1 um.
+        code: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import train_test_split
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.linear_model import LogisticRegression
+
+          X, y = load_iris(return_X_y=True)
+          X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+          scaler = StandardScaler()
+          X_train_s = scaler.fit_transform(X_train)   # lernen + anwenden
+          X_test_s = scaler.transform(X_test)         # nur anwenden!
+
+          modell = LogisticRegression()
+          modell.fit(X_train_s, y_train)
+          print("Genauigkeit:", modell.score(X_test_s, y_test))
+        run: true
+
+      - type: mc
+        question: "Welche Variante ist korrekt?"
+        options:
+          - "Scaler mit `fit` auf `X_train`, dann `transform` auf `X_train` und `X_test`"
+          - "Scaler mit `fit` auf allen Daten `X`, dann splitten"
+          - "`fit_transform` auf `X_train` **und** `fit_transform` auf `X_test`"
+          - "Den Test-Datensatz gar nicht skalieren"
+        answer: 0
+        explain: "Der Scaler darf nur aus den Trainingsdaten lernen. Auf die Testdaten wird **dieselbe** Umrechnung angewendet, wie später auf echte neue Daten."
+
+      - type: cloze
+        code: |
+          scaler = StandardScaler()
+          X_train_s = scaler.___(X_train)
+          X_test_s = scaler.___(X_test)
+        answers: ["fit_transform", "transform"]
+        distractors: ["fit", "predict", "fit_predict"]
+        explain: "`fit_transform` = `fit` + `transform` in einem Schritt, aber nur für Trainingsdaten!"
+
+      - type: mc
+        question: "Welche dieser Objekte haben eine `.transform()`-Methode?"
+        options: ["`StandardScaler`", "`OneHotEncoder`", "`SimpleImputer`", "`LogisticRegression`"]
+        answer: [0, 1, 2]
+        explain: "Scaler, Encoder und Imputer **verändern** Daten (Transformer). `LogisticRegression` ist ein Modell. Es hat `predict`, aber kein `transform`."
+
+      - type: predict
+        code: |
+          import numpy as np
+          from sklearn.preprocessing import StandardScaler
+
+          X = np.array([[1.0], [2.0], [3.0]])
+          s = StandardScaler().fit(X)
+          print(s.mean_)
+        explain: "Nach dem `fit` stehen die gelernten Kennzahlen in Attributen mit Unterstrich am Ende: `mean_`, `scale_`, `coef_` …"
+
+      - type: free
+        question: "Erkläre in eigenen Worten, was **Data Leakage** ist und warum es gefährlich ist."
+        solution: |
+          Data Leakage bedeutet, dass Informationen aus den Testdaten (oder aus der Zukunft) beim Training benutzt werden, z. B. wenn der Scaler auf allen Daten gefittet wird.
+          Das Modell sieht dann besser aus, als es wirklich ist: Die Test-Bewertung ist **zu optimistisch**, und bei echten neuen Daten schneidet es schlechter ab.
+
+      - type: code
+        question: |
+          Skaliere korrekt (Scaler **nur** auf Trainingsdaten fitten!), trainiere `LogisticRegression(max_iter=1000)` und speichere die Test-Genauigkeit in `acc`.
+        starter: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import train_test_split
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.linear_model import LogisticRegression
+
+          X, y = load_iris(return_X_y=True)
+          X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1, stratify=y)
+
+          scaler = StandardScaler()
+          # dein Code
+
+          print("acc:", acc)
+        solution: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import train_test_split
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.linear_model import LogisticRegression
+
+          X, y = load_iris(return_X_y=True)
+          X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1, stratify=y)
+
+          scaler = StandardScaler()
+          X_train_s = scaler.fit_transform(X_train)
+          X_test_s = scaler.transform(X_test)
+
+          modell = LogisticRegression(max_iter=1000)
+          modell.fit(X_train_s, y_train)
+          acc = modell.score(X_test_s, y_test)
+
+          print("acc:", acc)
+        hint: "`X_train_s = scaler.fit_transform(X_train)`, `X_test_s = scaler.transform(X_test)`, dann `modell.fit(...)` und `acc = modell.score(X_test_s, y_test)`."
+        tests: |
+          import numpy as np
+          assert np.allclose(scaler.mean_, X_train.mean(axis=0)), "Der Scaler wurde nicht (nur) auf X_train gefittet. Data Leakage!"
+          assert 0.85 < acc <= 1.0, f"acc = {acc} wirkt unplausibel"
+
+      - type: vocab
+        id: fit_transform
+
+  # ------------------------------------------------------------------
+  - id: sklearn-3
+    title: "Pipelines mit Namen"
+    vocab: [Pipeline, make_pipeline, named_steps]
+    intro: |
+      Eine **Pipeline** klebt Vorverarbeitung und Modell zu **einem** Objekt zusammen. Jeder Schritt bekommt einen **Namen**:
+
+      ```python
+      pipe = Pipeline([
+          ("scaler", StandardScaler()),
+          ("modell", LogisticRegression()),
+      ])
+      ```
+
+      Dann reicht ein einziges `pipe.fit(X_train, y_train)`, und die Pipeline macht automatisch alles richtig: `fit_transform` beim Training, `transform` bei der Vorhersage. Kein Leakage mehr aus Versehen.
+    exercises:
+      - type: info
+        text: "Die Pipeline verhält sich wie ein Modell: `fit`, `predict`, `score`."
+        code: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import train_test_split
+          from sklearn.pipeline import Pipeline
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.neighbors import KNeighborsClassifier
+
+          X, y = load_iris(return_X_y=True)
+          X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+          pipe = Pipeline([
+              ("scaler", StandardScaler()),
+              ("knn", KNeighborsClassifier(n_neighbors=5)),
+          ])
+          pipe.fit(X_train, y_train)
+          print(pipe.score(X_test, y_test))
+          print(pipe.named_steps["scaler"].mean_)
+        run: true
+
+      - type: cloze
+        code: |
+          pipe = ___([
+              ("scaler", StandardScaler()),
+              ("modell", LogisticRegression()),
+          ])
+          pipe.___(X_train, y_train)
+          print(pipe.___(X_test, y_test))
+        answers: ["Pipeline", "fit", "score"]
+        distractors: ["make_pipeline", "transform", "predict"]
+        explain: "`Pipeline` bekommt eine **Liste von Tupeln** `(name, objekt)`. `make_pipeline` bekäme die Objekte ohne Namen."
+
+      - type: mc
+        question: "Warum sind Pipelines besonders bei Cross-Validation wichtig?"
+        options:
+          - "Weil der Scaler dann in jedem Fold nur auf den Trainingsteil gefittet wird"
+          - "Weil Cross-Validation ohne Pipeline nicht funktioniert"
+          - "Weil Pipelines das Modell genauer machen"
+          - "Weil man dann keine Testdaten mehr braucht"
+        answer: 0
+        explain: "Ohne Pipeline würdest du die Daten vorher komplett skalieren und jeder Validierungs-Fold hätte schon „mitgelernt“."
+
+      - type: predict
+        code: |
+          from sklearn.pipeline import make_pipeline
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.linear_model import LogisticRegression
+
+          pipe = make_pipeline(StandardScaler(), LogisticRegression())
+          print(list(pipe.named_steps))
+        explain: "`make_pipeline` vergibt die Namen automatisch: der Klassenname in Kleinbuchstaben."
+
+      - type: parsons
+        question: "Baue eine benannte Pipeline, trainiere sie und gib die Genauigkeit aus."
+        code: |
+          pipe = Pipeline([
+              ("scaler", StandardScaler()),
+              ("knn", KNeighborsClassifier(n_neighbors=5)),
+          ])
+          pipe.fit(X_train, y_train)
+          y_pred = pipe.predict(X_test)
+          print(accuracy_score(y_test, y_pred))
+        distractors: ["pipe.fit(X_test, y_test)"]
+        explain: "Gefittet wird auf **Train**, vorhergesagt auf **Test**. Die Schritt-Tupel sind innerhalb der Liste eingerückt."
+
+      - type: mc
+        question: "Wie kommst du an den Schritt `\"knn\"` der Pipeline `pipe`?"
+        options: ["`pipe.named_steps[\"knn\"]`", "`pipe[\"knn\"]`", "`pipe.knn`", "`pipe.steps[\"knn\"]`"]
+        answer: [0, 1]
+        explain: "Beides geht: `named_steps[...]` und direkt `pipe[\"knn\"]`. `pipe.steps` ist dagegen eine **Liste** von Tupeln."
+
+      - type: vocab
+        id: named_steps
+
+      - type: code
+        question: |
+          Baue für den Wein-Datensatz eine Pipeline `pipe` mit den Schritten **`"scaler"`** (`StandardScaler`) und **`"svm"`** (`SVC()`), trainiere sie und speichere die Test-Genauigkeit in `acc`.
+        starter: |
+          from sklearn.datasets import load_wine
+          from sklearn.model_selection import train_test_split
+          from sklearn.pipeline import Pipeline
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.svm import SVC
+
+          X, y = load_wine(return_X_y=True)
+          X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)
+
+          # dein Code
+
+          print("acc:", acc)
+        solution: |
+          from sklearn.datasets import load_wine
+          from sklearn.model_selection import train_test_split
+          from sklearn.pipeline import Pipeline
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.svm import SVC
+
+          X, y = load_wine(return_X_y=True)
+          X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)
+
+          pipe = Pipeline([
+              ("scaler", StandardScaler()),
+              ("svm", SVC()),
+          ])
+          pipe.fit(X_train, y_train)
+          acc = pipe.score(X_test, y_test)
+
+          print("acc:", acc)
+        hint: "`pipe = Pipeline([(\"scaler\", StandardScaler()), (\"svm\", SVC())])`, dann `fit` und `score`."
+        tests: |
+          from sklearn.pipeline import Pipeline as _P
+          from sklearn.svm import SVC as _S
+          assert isinstance(pipe, _P), "pipe sollte eine Pipeline sein"
+          assert list(pipe.named_steps) == ["scaler", "svm"], f"Schrittnamen sollten ['scaler', 'svm'] sein, sind {list(pipe.named_steps)}"
+          assert isinstance(pipe["svm"], _S), "Der Schritt 'svm' sollte ein SVC sein"
+          assert hasattr(pipe["svm"], "support_"), "Die Pipeline wurde noch nicht gefittet"
+          assert acc > 0.9, f"acc = {acc}. Mit Skalierung sollte die SVM über 0.9 schaffen"
+
+  # ------------------------------------------------------------------
+  - id: sklearn-4
+    title: "ColumnTransformer: Zahlen und Kategorien"
+    vocab: [ColumnTransformer, OneHotEncoder, SimpleImputer, handle_unknown]
+    intro: |
+      Echte Tabellen mischen **Zahlen** (Alter, Einkommen) und **Kategorien** (Stadt, Geschlecht), oft mit Lücken.
+      Mit dem `ColumnTransformer` bekommt jede Spaltengruppe ihre eigene Vorverarbeitung:
+
+      ```python
+      pre = ColumnTransformer([
+          ("num", StandardScaler(), ["alter", "einkommen"]),
+          ("cat", OneHotEncoder(handle_unknown="ignore"), ["stadt"]),
+      ])
+      ```
+
+      Und weil das wieder ein Transformer ist, kommt er als Schritt in eine Pipeline. Pipelines lassen sich **verschachteln**.
+    exercises:
+      - type: info
+        text: "So sieht das mit einem kleinen pandas-DataFrame aus:"
+        code: |
+          import pandas as pd
+          from sklearn.compose import ColumnTransformer
+          from sklearn.preprocessing import StandardScaler, OneHotEncoder
+
+          df = pd.DataFrame({
+              "alter": [25, 40, 33, 51],
+              "einkommen": [2800, 4200, 3500, 5100],
+              "stadt": ["Berlin", "Köln", "Berlin", "Wien"],
+          })
+          pre = ColumnTransformer([
+              ("num", StandardScaler(), ["alter", "einkommen"]),
+              ("cat", OneHotEncoder(handle_unknown="ignore"), ["stadt"]),
+          ])
+          out = pre.fit_transform(df)
+          print(out.shape)
+          print(pre.get_feature_names_out())
+        run: true
+
+      - type: mc
+        question: "Was macht der `OneHotEncoder` aus der Spalte `stadt` mit den Werten Berlin, Köln, Wien?"
+        options:
+          - "Drei 0/1-Spalten, eine pro Stadt"
+          - "Eine Spalte mit den Zahlen 0, 1, 2"
+          - "Er löscht die Spalte"
+          - "Er sortiert die Städte alphabetisch"
+        answer: 0
+        explain: "One-Hot = für jede Kategorie eine eigene Spalte mit 1 (trifft zu) oder 0. So denkt das Modell nicht, Wien wäre „größer“ als Berlin."
+
+      - type: cloze
+        code: |
+          pre = ColumnTransformer([
+              ("num", ___, ["alter", "einkommen"]),
+              ("cat", OneHotEncoder(handle_unknown="___"), ["stadt"]),
+          ])
+        answers: ["StandardScaler()", "ignore"]
+        distractors: ["OneHotEncoder()", "error", "drop"]
+
+      - type: predict
+        question: "Der Datensatz hat 2 Zahlen-Spalten und eine Spalte `stadt` mit 3 verschiedenen Städten. Wie viele Spalten hat das Ergebnis des ColumnTransformers oben?"
+        code: |
+          print(pre.fit_transform(df).shape[1])
+        options: ["5", "3", "6", "2"]
+        answer: 0
+        explain: "2 skalierte Zahlen-Spalten + 3 One-Hot-Spalten = 5."
+
+      - type: mc
+        question: "Wozu dient `handle_unknown=\"ignore\"`?"
+        options:
+          - "Kommt bei der Vorhersage eine unbekannte Kategorie (z. B. eine neue Stadt), gibt es keinen Fehler, sondern nur Nullen"
+          - "Fehlende Werte werden ignoriert"
+          - "Die Spalte wird beim Training ignoriert"
+          - "Warnungen werden unterdrückt"
+        answer: 0
+
+      - type: parsons
+        question: "Verschachtelte Pipeline: Zahlen erst auffüllen, dann skalieren; Kategorien one-hot-kodieren; zum Schluss das Modell."
+        code: |
+          num_pipe = Pipeline([
+              ("imputer", SimpleImputer(strategy="median")),
+              ("scaler", StandardScaler()),
+          ])
+          pre = ColumnTransformer([
+              ("num", num_pipe, num_cols),
+              ("cat", OneHotEncoder(handle_unknown="ignore"), cat_cols),
+          ])
+          modell = Pipeline([("pre", pre), ("clf", LogisticRegression())])
+        explain: "Von innen nach außen: kleine Pipeline für Zahlen → ColumnTransformer → große Pipeline mit Modell."
+
+      - type: vocab
+        id: SimpleImputer
+
+      - type: code
+        question: |
+          Baue eine Pipeline `modell` mit den Schritten `"pre"` (ColumnTransformer) und `"clf"` (`LogisticRegression()`).
+          Im ColumnTransformer: `"num"` = Imputer (Median) + Scaler für `num_cols`, `"cat"` = OneHotEncoder (`handle_unknown="ignore"`) für `cat_cols`.
+          Fitte `modell` auf `df[num_cols + cat_cols]` und `df["kauft"]`.
+        starter: |
+          import numpy as np
+          import pandas as pd
+          from sklearn.compose import ColumnTransformer
+          from sklearn.pipeline import Pipeline
+          from sklearn.impute import SimpleImputer
+          from sklearn.preprocessing import StandardScaler, OneHotEncoder
+          from sklearn.linear_model import LogisticRegression
+
+          df = pd.DataFrame({
+              "alter":     [25, 40, np.nan, 51, 29, 62, 35, 44],
+              "einkommen": [2800, 4200, 3500, np.nan, 3000, 5200, 3900, 4100],
+              "stadt":     ["Berlin", "Köln", "Berlin", "Wien", "Köln", "Wien", "Berlin", "Köln"],
+              "kauft":     [0, 1, 0, 1, 0, 1, 1, 1],
+          })
+          num_cols = ["alter", "einkommen"]
+          cat_cols = ["stadt"]
+
+          # dein Code
+
+          print(modell.predict(df[num_cols + cat_cols]))
+        solution: |
+          import numpy as np
+          import pandas as pd
+          from sklearn.compose import ColumnTransformer
+          from sklearn.pipeline import Pipeline
+          from sklearn.impute import SimpleImputer
+          from sklearn.preprocessing import StandardScaler, OneHotEncoder
+          from sklearn.linear_model import LogisticRegression
+
+          df = pd.DataFrame({
+              "alter":     [25, 40, np.nan, 51, 29, 62, 35, 44],
+              "einkommen": [2800, 4200, 3500, np.nan, 3000, 5200, 3900, 4100],
+              "stadt":     ["Berlin", "Köln", "Berlin", "Wien", "Köln", "Wien", "Berlin", "Köln"],
+              "kauft":     [0, 1, 0, 1, 0, 1, 1, 1],
+          })
+          num_cols = ["alter", "einkommen"]
+          cat_cols = ["stadt"]
+
+          num_pipe = Pipeline([
+              ("imputer", SimpleImputer(strategy="median")),
+              ("scaler", StandardScaler()),
+          ])
+          pre = ColumnTransformer([
+              ("num", num_pipe, num_cols),
+              ("cat", OneHotEncoder(handle_unknown="ignore"), cat_cols),
+          ])
+          modell = Pipeline([("pre", pre), ("clf", LogisticRegression())])
+          modell.fit(df[num_cols + cat_cols], df["kauft"])
+
+          print(modell.predict(df[num_cols + cat_cols]))
+        hint: "Nimm das Code-Puzzle von eben als Vorlage und ergänze am Ende `modell.fit(df[num_cols + cat_cols], df[\"kauft\"])`."
+        tests: |
+          assert list(modell.named_steps) == ["pre", "clf"], f"Schritte sollten ['pre', 'clf'] heißen, sind {list(modell.named_steps)}"
+          namen = [t[0] for t in modell["pre"].transformers]
+          assert "num" in namen and "cat" in namen, f"ColumnTransformer sollte 'num' und 'cat' haben, hat {namen}"
+          neu = pd.DataFrame({"alter": [30], "einkommen": [np.nan], "stadt": ["Hamburg"]})
+          assert len(modell.predict(neu)) == 1, "Vorhersage für neue Daten klappt nicht"
+
+  # ------------------------------------------------------------------
+  - id: sklearn-5
+    title: "Projekt: Cross-Validation & GridSearch"
+    project: true
+    vocab: [cross_val_score, GridSearchCV, param-grid-names, best_params_, best_estimator_]
+    intro: |
+      Statt nur einmal zu splitten, teilt **Cross-Validation** die Trainingsdaten in z. B. 5 Teile (Folds): 5-mal trainieren, jedes Mal ein anderer Teil zum Validieren.
+
+      **GridSearchCV** probiert damit alle Parameter-Kombinationen durch, also genau die verschachtelte Schleife aus der Skript-Welt, nur automatisch.
+      Parameter von Pipeline-Schritten sprichst du mit **zwei Unterstrichen** an: `schrittname__parameter`, z. B. `knn__n_neighbors`.
+    exercises:
+      - type: info
+        code: |
+          from sklearn.datasets import load_iris
+          from sklearn.model_selection import cross_val_score
+          from sklearn.pipeline import Pipeline
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.neighbors import KNeighborsClassifier
+
+          X, y = load_iris(return_X_y=True)
+          pipe = Pipeline([("scaler", StandardScaler()), ("knn", KNeighborsClassifier())])
+
+          scores = cross_val_score(pipe, X, y, cv=5)
+          print(scores.round(3))
+          print("Mittel:", scores.mean().round(3))
+        text: "`cross_val_score` liefert einen Score pro Fold. Der Mittelwert ist robuster als ein einzelner Split."
+        run: true
+
+      - type: mc
+        question: "Was bedeutet `cv=5`?"
+        options:
+          - "Die Daten werden in 5 Teile geteilt; 5-mal wird auf 4 Teilen trainiert und auf dem 5. bewertet"
+          - "Das Modell wird 5 Sekunden trainiert"
+          - "5 % der Daten werden zum Testen benutzt"
+          - "Es werden 5 verschiedene Modelle verglichen"
+        answer: 0
+
+      - type: cloze
+        question: "Durchsuche `n_neighbors` des Pipeline-Schritts `\"knn\"` und gib die beste Kombination aus."
+        code: |
+          param_grid = {
+              "___": [1, 3, 5, 7],
+              "knn__weights": ["uniform", "distance"],
+          }
+          suche = GridSearchCV(pipe, param_grid, cv=5)
+          suche.fit(X_train, y_train)
+          print(suche.___)
+        answers: ["knn__n_neighbors", "best_params_"]
+        distractors: ["n_neighbors", "knn_n_neighbors", "best_score", "best_params"]
+        explain: "Schrittname + **zwei** Unterstriche + Parametername. Ergebnisse von `fit` enden mit `_`: `best_params_`, `best_score_`, `best_estimator_`."
+
+      - type: mc
+        question: "Das Grid hat 4 × 2 = 8 Kombinationen, `cv=5`. Wie viele Trainingsläufe macht die Suche (ohne das finale Refit)?"
+        options: ["40", "8", "13", "5"]
+        answer: 0
+        explain: "Jede der 8 Kombinationen wird 5-mal trainiert: 8 × 5 = 40. Danach wird das beste Modell einmal auf allen Trainingsdaten neu trainiert (Refit)."
+
+      - type: free
+        question: "Nach der GridSearch kennst du `best_score_`. Warum bewertest du das beste Modell trotzdem noch einmal auf dem **Test-Set**?"
+        solution: |
+          `best_score_` ist der beste Cross-Validation-Score unter vielen ausprobierten Kombinationen. Weil wir genau die Kombination **ausgewählt** haben, die auf diesen Folds am besten aussah, ist der Wert leicht zu optimistisch.
+          Das Test-Set war an der Auswahl nicht beteiligt und liefert deshalb eine **ehrliche** Schätzung für neue Daten.
+
+      - type: vocab
+        id: param-grid-names
+
+      - type: code
+        question: |
+          **Projekt:** Finde die beste KNN-Pipeline für den Wein-Datensatz.
+
+          1. Pipeline `pipe` mit `"scaler"` (StandardScaler) und `"knn"` (KNeighborsClassifier)
+          2. `GridSearchCV` als `suche` über `n_neighbors` = 1, 3, 5, 7, 9 und `weights` = `"uniform"`, `"distance"`, `cv=5`
+          3. Auf den Trainingsdaten fitten, beste Parameter ausgeben
+          4. Test-Genauigkeit in `test_acc` speichern
+        starter: |
+          from sklearn.datasets import load_wine
+          from sklearn.model_selection import train_test_split, GridSearchCV
+          from sklearn.pipeline import Pipeline
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.neighbors import KNeighborsClassifier
+
+          TEST_SIZE = 0.25
+          SEED = 42
+
+          def lade_daten():
+              X, y = load_wine(return_X_y=True)
+              return train_test_split(X, y, test_size=TEST_SIZE, random_state=SEED, stratify=y)
+
+          X_train, X_test, y_train, y_test = lade_daten()
+
+          # 1. Pipeline
+
+          # 2. + 3. GridSearch
+
+          # 4. Test-Genauigkeit
+        solution: |
+          from sklearn.datasets import load_wine
+          from sklearn.model_selection import train_test_split, GridSearchCV
+          from sklearn.pipeline import Pipeline
+          from sklearn.preprocessing import StandardScaler
+          from sklearn.neighbors import KNeighborsClassifier
+
+          TEST_SIZE = 0.25
+          SEED = 42
+
+          def lade_daten():
+              X, y = load_wine(return_X_y=True)
+              return train_test_split(X, y, test_size=TEST_SIZE, random_state=SEED, stratify=y)
+
+          X_train, X_test, y_train, y_test = lade_daten()
+
+          pipe = Pipeline([
+              ("scaler", StandardScaler()),
+              ("knn", KNeighborsClassifier()),
+          ])
+          param_grid = {
+              "knn__n_neighbors": [1, 3, 5, 7, 9],
+              "knn__weights": ["uniform", "distance"],
+          }
+          suche = GridSearchCV(pipe, param_grid, cv=5)
+          suche.fit(X_train, y_train)
+          print("Beste Parameter:", suche.best_params_)
+          print("CV-Score:", round(suche.best_score_, 3))
+
+          test_acc = suche.score(X_test, y_test)
+          print("Test-Genauigkeit:", round(test_acc, 3))
+        hint: |
+          `param_grid = {"knn__n_neighbors": [...], "knn__weights": [...]}`
+          `suche = GridSearchCV(pipe, param_grid, cv=5)` → `suche.fit(X_train, y_train)` → `test_acc = suche.score(X_test, y_test)`
+        tests: |
+          from sklearn.model_selection import GridSearchCV as _G
+          assert isinstance(suche, _G), "suche sollte ein GridSearchCV-Objekt sein"
+          assert set(suche.param_grid) == {"knn__n_neighbors", "knn__weights"}, f"param_grid-Schlüssel: {set(suche.param_grid)}. Zwei Unterstriche?"
+          assert hasattr(suche, "best_params_"), "suche wurde noch nicht gefittet"
+          assert list(suche.best_estimator_.named_steps) == ["scaler", "knn"], "Pipeline-Schritte sollten 'scaler' und 'knn' heißen"
+          assert suche.cv == 5, "cv=5 setzen"
+          assert test_acc > 0.85, f"test_acc = {test_acc}"

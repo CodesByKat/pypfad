@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#2f6f5e"/>
+  <path d="M120 360 C 200 360, 200 250, 280 250 S 360 150, 400 150" fill="none" stroke="#f6f4ef" stroke-width="34" stroke-linecap="round" stroke-dasharray="2 60"/>
+  <circle cx="120" cy="360" r="38" fill="#e0a526"/>
+  <circle cx="400" cy="150" r="38" fill="#f6f4ef"/>
+  <text x="256" y="455" font-family="Menlo, Consolas, monospace" font-size="72" font-weight="700" fill="#f6f4ef" text-anchor="middle">py</text>
+</svg>

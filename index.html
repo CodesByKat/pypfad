@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>PyPfad</title>
+  <meta name="description" content="Offline Python, Daten und Machine Learning lernen. Kostenlos, ohne Abo, ohne Leben.">
+  <meta name="theme-color" content="#2f6f5e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <div class="brand"><img src="icons/icon.svg" alt="" width="28" height="28"><span>PyPfad</span></div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main id="view" class="view" tabindex="-1">
+    <p class="muted center">Lade …</p>
+  </main>
+
+  <nav class="tabbar" id="tabbar">
+    <a href="#/" data-tab="path"><span class="ti">🗺️</span><span>Lernpfad</span></a>
+    <a href="#/vokabeln" data-tab="vocab"><span class="ti">🃏</span><span>Vokabeln</span></a>
+    <a href="#/spielwiese" data-tab="play"><span class="ti">🧪</span><span>Spielwiese</span></a>
+    <a href="#/profil" data-tab="profile"><span class="ti">⚙️</span><span>Profil</span></a>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

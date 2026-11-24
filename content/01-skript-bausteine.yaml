@@ -1,0 +1,488 @@
+id: skript
+title: "Skript-Bausteine"
+emoji: "🧱"
+description: "Schleifen, Dicts, Funktionen, Verschachtelung und das Main-Skript"
+lessons:
+
+  # ------------------------------------------------------------------
+  - id: skript-1
+    title: "Schleifen-Werkzeuge: range, enumerate, zip"
+    vocab: [range, enumerate, zip, fstring]
+    intro: |
+      In Daten-Skripten läufst du ständig über Listen: Spaltennamen, Modelle, Parameter, Dateien.
+      Drei Helfer machen das viel einfacher:
+
+      - `range(n)` zählt von 0 bis n-1
+      - `enumerate(liste)` liefert **Position und Wert**
+      - `zip(a, b)` läuft über **zwei Listen gleichzeitig**
+    exercises:
+      - type: info
+        text: |
+          Eine `for`-Schleife nimmt nacheinander jedes Element. Alles, was **eingerückt** unter der Zeile mit dem Doppelpunkt steht, wird für jedes Element wiederholt.
+        code: |
+          modelle = ["LogReg", "KNN", "SVM"]
+          for m in modelle:
+              print("Trainiere", m)
+          print("fertig")
+        run: true
+
+      - type: predict
+        code: |
+          for i in range(3):
+              print(i)
+
+      - type: mc
+        question: "Welche Zahlen liefert `range(2, 8, 2)`?"
+        options: ["2, 4, 6", "2, 4, 6, 8", "2, 8", "0, 2, 4, 6"]
+        answer: 0
+        explain: "`range(start, stop, schritt)`: Der **Stop-Wert ist nie dabei**. Also 2, 4, 6."
+
+      - type: cloze
+        question: "Gib Position und Namen jeder Spalte aus."
+        code: |
+          spalten = ["alter", "bmi", "blutdruck"]
+          for ___, name in ___(spalten):
+              print(i, name)
+        answers: ["i", "enumerate"]
+        distractors: ["range", "zip", "index"]
+        explain: "`enumerate` liefert Paare `(position, wert)`, die wir direkt in `i, name` entpacken."
+
+      - type: predict
+        code: |
+          features = ["alter", "bmi"]
+          werte = [42, 23.5]
+          for f, w in zip(features, werte):
+              print(f"{f}: {w}")
+        explain: "`zip` bildet Paare aus beiden Listen. Der f-String `f\"{f}: {w}\"` setzt die Werte in den Text ein."
+
+      - type: vocab
+        id: enumerate
+
+      - type: parsons
+        question: "Summiere nur die positiven Werte und gib die Summe aus."
+        code: |
+          summe = 0
+          for wert in werte:
+              if wert > 0:
+                  summe += wert
+          print(summe)
+        distractors: ["return summe"]
+        explain: "`summe = 0` steht **vor** der Schleife, `print` **danach** (nicht eingerückt), sonst würde bei jedem Durchlauf gedruckt."
+
+      - type: code
+        question: |
+          Gib für jede Spalte Position und Namen im Format `0: alter` aus (eine Zeile pro Spalte).
+        starter: |
+          spalten = ["alter", "bmi", "blutdruck"]
+
+          # dein Code
+        solution: |
+          spalten = ["alter", "bmi", "blutdruck"]
+          for i, name in enumerate(spalten):
+              print(f"{i}: {name}")
+        hint: "`for i, name in enumerate(spalten):` und darin `print(f\"{i}: {name}\")`"
+        tests: |
+          zeilen = _ausgabe.strip().splitlines()
+          assert zeilen == ["0: alter", "1: bmi", "2: blutdruck"], f"Erwartet 3 Zeilen wie '0: alter', bekommen: {zeilen}"
+
+      - type: vocab
+        id: zip
+
+  # ------------------------------------------------------------------
+  - id: skript-2
+    title: "Dictionaries, Zählen, Comprehensions"
+    vocab: [dict-items, dict-get, listcomp, dictcomp]
+    intro: |
+      Dictionaries ordnen **Schlüssel → Wert** zu, z. B. Modellname → Score oder Klasse → Anzahl.
+      Comprehensions bauen Listen und Dicts in einer Zeile, typisch zum Umbenennen, Filtern und Umrechnen.
+    exercises:
+      - type: info
+        text: |
+          Mit `.items()` bekommst du Schlüssel **und** Wert in einer Schleife.
+        code: |
+          scores = {"LogReg": 0.91, "KNN": 0.88}
+          for modell, score in scores.items():
+              print(modell, "->", score)
+          scores["SVM"] = 0.93   # neuer Eintrag
+          print(len(scores))
+        run: true
+
+      - type: mc
+        question: "Wie läufst du über Schlüssel **und** Werte eines Dicts `d`?"
+        options: ["`for k, v in d.items():`", "`for k, v in d:`", "`for k, v in enumerate(d):`", "`for k, v in d.values():`"]
+        answer: 0
+        explain: "`for k in d` liefert nur die Schlüssel. `.items()` liefert Paare `(schlüssel, wert)`."
+
+      - type: predict
+        code: |
+          labels = ["a", "b", "a", "c", "a"]
+          zaehler = {}
+          for l in labels:
+              zaehler[l] = zaehler.get(l, 0) + 1
+          print(zaehler)
+        explain: "`zaehler.get(l, 0)` liefert den bisherigen Wert oder 0, wenn der Schlüssel noch fehlt. Das klassische Zähl-Muster!"
+
+      - type: predict
+        question: "Was liefert diese List Comprehension?"
+        code: |
+          quadrate = [x ** 2 for x in [1, 2, 3, 4] if x % 2 == 0]
+          print(quadrate)
+        options: ["`[4, 16]`", "`[1, 4, 9, 16]`", "`[1, 9]`", "`[2, 4]`"]
+        answer: 0
+        explain: "Lies von hinten: für jedes `x` aus der Liste, **wenn** `x` gerade ist, nimm `x ** 2`."
+
+      - type: cloze
+        question: "Baue ein Dict: Spaltenname → Länge des Namens."
+        code: |
+          namen = ["alter", "bmi"]
+          laengen = {___: len(name) ___ name in namen}
+        answers: ["name", "for"]
+        distractors: ["len", "in", "if"]
+        explain: "Dict Comprehension: `{schlüssel: wert for element in liste}`"
+
+      - type: parsons
+        question: "Gib für jedes Modell jede Metrik aus (Dict in Dict)."
+        code: |
+          for modell, scores in ergebnisse.items():
+              for metrik, wert in scores.items():
+                  print(modell, metrik, wert)
+        explain: "Die innere Schleife läuft über das innere Dict `scores`. Typisch für Ergebnisse von mehreren Modellen."
+
+      - type: vocab
+        id: dict-get
+
+      - type: code
+        question: |
+          Zähle, wie oft jede Klasse in `y` vorkommt. Speichere das Ergebnis als Dict in `haeufigkeit`, z. B. `{"setosa": 2, ...}`.
+        starter: |
+          y = ["setosa", "virginica", "setosa", "versicolor", "virginica", "virginica"]
+
+          haeufigkeit = {}
+          # dein Code
+        solution: |
+          y = ["setosa", "virginica", "setosa", "versicolor", "virginica", "virginica"]
+
+          haeufigkeit = {}
+          for klasse in y:
+              haeufigkeit[klasse] = haeufigkeit.get(klasse, 0) + 1
+        hint: "Muster: `haeufigkeit[klasse] = haeufigkeit.get(klasse, 0) + 1` in einer Schleife über `y`."
+        tests: |
+          assert isinstance(haeufigkeit, dict), "haeufigkeit sollte ein Dict sein"
+          assert haeufigkeit == {"setosa": 2, "virginica": 3, "versicolor": 1}, f"Bekommen: {haeufigkeit}"
+
+      - type: vocab
+        id: listcomp
+
+  # ------------------------------------------------------------------
+  - id: skript-3
+    title: "Funktionen bauen"
+    vocab: [def-return, default-param, return-tuple]
+    intro: |
+      Funktionen sind die Bausteine jedes Skripts: einmal schreiben, oft benutzen, einzeln testen.
+      Eine Funktion **bekommt** Werte (Parameter) und **gibt** mit `return` ein Ergebnis zurück.
+    exercises:
+      - type: info
+        text: |
+          Parameter können **Standardwerte** haben. Mit `return` kannst du auch mehrere Werte auf einmal zurückgeben (als Tupel).
+        code: |
+          def skaliere(werte, faktor=2):
+              return [w * faktor for w in werte]
+
+          print(skaliere([1, 2, 3]))
+          print(skaliere([1, 2, 3], faktor=10))
+        run: true
+
+      - type: mc
+        question: "Was gibt eine Funktion zurück, die **kein** `return` hat?"
+        options: ["`None`", "`0`", "Den Wert der letzten Zeile", "Einen Fehler"]
+        answer: 0
+        explain: "Ohne `return` gibt jede Funktion `None` zurück. Häufiger Fehler: `print` statt `return` benutzt."
+
+      - type: cloze
+        question: "Ergänze den Standardwert 1 und den richtigen Parameter."
+        code: |
+          def skaliere(werte, faktor=___):
+              return [w * faktor for w in ___]
+        answers: ["1", "werte"]
+        distractors: ["0", "faktor", "return"]
+
+      - type: predict
+        code: |
+          def min_max(werte):
+              return min(werte), max(werte)
+
+          lo, hi = min_max([3, 9, 1])
+          print(lo, hi)
+        explain: "`return a, b` gibt ein Tupel zurück, das wir direkt in `lo, hi` entpacken. Wie bei `X_train, X_test = ...`!"
+
+      - type: parsons
+        question: "Baue die Funktion `mittelwert`."
+        code: |
+          def mittelwert(werte):
+              summe = 0
+              for w in werte:
+                  summe += w
+              return summe / len(werte)
+        distractors: ["print(summe / len(werte))"]
+        explain: "`return` steht nach der Schleife auf Funktions-Ebene, sonst würde die Funktion schon nach dem ersten Wert enden."
+
+      - type: free
+        question: "Erkläre in eigenen Worten: Was ist der Unterschied zwischen `print(...)` und `return ...` in einer Funktion?"
+        solution: |
+          `print` **zeigt** einen Wert nur auf dem Bildschirm an. Das Programm kann damit nicht weiterrechnen.
+          `return` **gibt** den Wert an die aufrufende Stelle zurück, sodass man ihn in einer Variable speichern und weiterverwenden kann (z. B. `score = bewerte(modell)`). Danach endet die Funktion.
+
+      - type: code
+        question: |
+          Schreibe `normalisiere(werte)`: Sie gibt eine **neue Liste** zurück, in der jeder Wert per Min-Max-Skalierung auf 0 bis 1 gebracht wird:
+          `(w - min) / (max - min)`
+        starter: |
+          def normalisiere(werte):
+              # dein Code
+              ...
+
+          print(normalisiere([10, 20, 30]))
+        solution: |
+          def normalisiere(werte):
+              lo, hi = min(werte), max(werte)
+              return [(w - lo) / (hi - lo) for w in werte]
+
+          print(normalisiere([10, 20, 30]))
+        hint: "Berechne zuerst `lo = min(werte)` und `hi = max(werte)`, dann eine List Comprehension."
+        tests: |
+          r = normalisiere([10, 20, 30])
+          assert r is not None, "Die Funktion gibt nichts zurück. return vergessen?"
+          assert [round(x, 6) for x in r] == [0.0, 0.5, 1.0], f"normalisiere([10, 20, 30]) sollte [0.0, 0.5, 1.0] sein, ist {r}"
+          assert [round(x, 6) for x in normalisiere([5, 0, 10])] == [0.5, 0.0, 1.0], "Mit [5, 0, 10] stimmt es noch nicht"
+
+      - type: vocab
+        id: default-param
+
+  # ------------------------------------------------------------------
+  - id: skript-4
+    title: "Verschachtelung: Schleife in Schleife"
+    vocab: [break-continue, product, nested-listcomp]
+    intro: |
+      Verschachtelte Schleifen sind der Kern vieler ML-Skripte: **für jedes Modell → für jeden Parameter → trainiere und bewerte**.
+      Wichtig ist, genau zu wissen, auf welcher Ebene (Einrückung) etwas passiert.
+    exercises:
+      - type: predict
+        code: |
+          for a in [1, 2]:
+              for b in ["x", "y"]:
+                  print(a, b)
+        explain: "Die innere Schleife läuft **komplett** durch, bevor die äußere einen Schritt weitergeht."
+
+      - type: mc
+        question: "Die äußere Schleife hat 3 Durchläufe, die innere 4. Wie oft wird der Code in der **inneren** Schleife ausgeführt?"
+        options: ["12", "7", "4", "3"]
+        answer: 0
+        explain: "3 × 4 = 12. Bei einem Grid mit 3 Tiefen und 4 Lernraten trainierst du also 12 Modelle."
+
+      - type: cloze
+        question: "Überspringe fehlende Werte (`None`) und brich ab, sobald ein Wert über 100 liegt."
+        code: |
+          for wert in werte:
+              if wert is None:
+                  ___
+              if wert > 100:
+                  ___
+              print(wert)
+        answers: ["continue", "break"]
+        distractors: ["pass", "return", "stop"]
+        explain: "`continue` springt zum **nächsten** Durchlauf, `break` beendet die Schleife **ganz**."
+
+      - type: parsons
+        question: "Manuelle Gridsuche: finde die beste Kombination aus Tiefe und Lernrate."
+        code: |
+          bestes = None
+          for tiefe in [2, 4, 8]:
+              for lr in [0.1, 0.01]:
+                  score = bewerte(tiefe, lr)
+                  if bestes is None or score > bestes[0]:
+                      bestes = (score, tiefe, lr)
+          print(bestes)
+        explain: "`bestes` wird **vor** den Schleifen angelegt, innen aktualisiert und **nach** den Schleifen ausgegeben. Genau das macht später `GridSearchCV` für dich."
+
+      - type: predict
+        code: |
+          tabelle = [[i * j for j in range(3)] for i in range(2)]
+          print(tabelle)
+        explain: "Die äußere Comprehension (über `i`) erzeugt die Zeilen, die innere (über `j`) die Werte jeder Zeile."
+
+      - type: vocab
+        id: product
+
+      - type: code
+        question: |
+          Erzeuge alle Kombinationen aus `tiefen` und `kriterien` als **Liste von Dicts** in `kombis`, z. B.
+          `{"tiefe": 2, "kriterium": "gini"}`. Reihenfolge: erst nach Tiefe, dann nach Kriterium.
+        starter: |
+          tiefen = [2, 4]
+          kriterien = ["gini", "entropy"]
+
+          kombis = []
+          # dein Code
+
+          for k in kombis:
+              print(k)
+        solution: |
+          tiefen = [2, 4]
+          kriterien = ["gini", "entropy"]
+
+          kombis = []
+          for t in tiefen:
+              for k in kriterien:
+                  kombis.append({"tiefe": t, "kriterium": k})
+
+          for k in kombis:
+              print(k)
+        hint: "Zwei verschachtelte `for`-Schleifen, innen `kombis.append({...})`."
+        tests: |
+          assert len(kombis) == 4, f"Es sollten 4 Kombinationen sein, sind {len(kombis)}"
+          assert kombis[0] == {"tiefe": 2, "kriterium": "gini"}, f"Erste Kombination falsch: {kombis[0]}"
+          assert kombis[1] == {"tiefe": 2, "kriterium": "entropy"}, "Reihenfolge: erst alle Kriterien für Tiefe 2"
+          assert kombis[3] == {"tiefe": 4, "kriterium": "entropy"}
+
+      - type: vocab
+        id: break-continue
+
+  # ------------------------------------------------------------------
+  - id: skript-5
+    title: "Projekt: Das Main-Skript"
+    project: true
+    vocab: [name-main, str-split, splitlines, round-format]
+    intro: |
+      Ein gutes Skript hat eine feste Reihenfolge:
+
+      - Imports
+      - Konstanten (Pfade, Parameter) in GROSSBUCHSTABEN
+      - Funktionen, die jeweils **einen** Schritt erledigen
+      - `main()`, das die Schritte verbindet: **laden → verarbeiten → auswerten → ausgeben**
+      - ganz unten: `if __name__ == "__main__": main()`
+    exercises:
+      - type: mc
+        question: "Wozu dient `if __name__ == \"__main__\":`?"
+        options:
+          - "Der Code darunter läuft nur, wenn die Datei direkt gestartet wird, nicht beim Importieren"
+          - "Er macht `main` zur ersten Funktion, die Python liest"
+          - "Er ist Pflicht, sonst startet Python nicht"
+          - "Er importiert alle Module"
+        answer: 0
+        explain: "So kannst du deine Funktionen in einem anderen Skript oder Notebook importieren, ohne dass gleich alles losläuft."
+
+      - type: parsons
+        question: "Bring das Skript in die richtige Reihenfolge."
+        code: |
+          import statistics
+          DATEN = [4, 8, 15, 16, 23, 42]
+          def lade_daten():
+              return DATEN
+          def auswerten(werte):
+              return statistics.mean(werte)
+          def main():
+              werte = lade_daten()
+              print(auswerten(werte))
+          if __name__ == "__main__":
+              main()
+        explain: "Funktionen müssen definiert sein, **bevor** `main()` am Ende aufgerufen wird. Deshalb steht der Aufruf ganz unten."
+
+      - type: mc
+        question: "Wo gehören Werte wie `TEST_SIZE = 0.2` oder `DATEI = \"daten.csv\"` hin?"
+        options: ["Oben als Konstanten, nach den Imports", "In jede Funktion, die sie braucht", "In `main()` ganz unten", "In die letzte Zeile"]
+        answer: 0
+        explain: "Konstanten oben machen das Skript leicht anpassbar: Du änderst einen Wert an genau einer Stelle."
+
+      - type: predict
+        code: |
+          zeile = "setosa,5.1"
+          art, laenge = zeile.split(",")
+          print(art, float(laenge) * 2)
+        explain: "`split(\",\")` zerlegt den Text an jedem Komma in eine Liste. `float(...)` wandelt Text in eine Zahl um."
+
+      - type: code
+        question: |
+          **Projekt:** Vervollständige `parse_zeilen` und `mittel_pro_gruppe`, damit das Main-Skript die mittlere Länge pro Art ausgibt.
+
+          - `parse_zeilen(text)` → Liste von Tupeln `(art, laenge)` mit `laenge` als `float` (Kopfzeile überspringen!)
+          - `mittel_pro_gruppe(paare)` → Dict `{art: mittelwert}`
+        starter: |
+          ROHDATEN = """art,laenge
+          setosa,5.1
+          versicolor,7.0
+          setosa,4.9
+          virginica,6.3
+          versicolor,6.4
+          """
+
+          def parse_zeilen(text):
+              paare = []
+              # dein Code
+              return paare
+
+          def mittel_pro_gruppe(paare):
+              ergebnis = {}
+              # dein Code
+              return ergebnis
+
+          def main():
+              paare = parse_zeilen(ROHDATEN)
+              for art, mittel in mittel_pro_gruppe(paare).items():
+                  print(f"{art}: {mittel:.2f}")
+
+          if __name__ == "__main__":
+              main()
+        solution: |
+          ROHDATEN = """art,laenge
+          setosa,5.1
+          versicolor,7.0
+          setosa,4.9
+          virginica,6.3
+          versicolor,6.4
+          """
+
+          def parse_zeilen(text):
+              paare = []
+              for zeile in text.strip().splitlines()[1:]:
+                  art, laenge = zeile.split(",")
+                  paare.append((art, float(laenge)))
+              return paare
+
+          def mittel_pro_gruppe(paare):
+              gruppen = {}
+              for art, laenge in paare:
+                  gruppen.setdefault(art, []).append(laenge)
+              ergebnis = {}
+              for art, werte in gruppen.items():
+                  ergebnis[art] = sum(werte) / len(werte)
+              return ergebnis
+
+          def main():
+              paare = parse_zeilen(ROHDATEN)
+              for art, mittel in mittel_pro_gruppe(paare).items():
+                  print(f"{art}: {mittel:.2f}")
+
+          if __name__ == "__main__":
+              main()
+        hint: |
+          `text.strip().splitlines()[1:]` liefert alle Zeilen ohne Kopfzeile.
+          Für die Gruppen: erst ein Dict `art → Liste von Längen` sammeln, dann pro Art `sum(werte) / len(werte)`.
+        tests: |
+          p = parse_zeilen(ROHDATEN)
+          assert isinstance(p, list) and len(p) == 5, f"parse_zeilen sollte 5 Paare liefern (ohne Kopfzeile), liefert {p}"
+          assert p[0] == ("setosa", 5.1), f"Erstes Paar sollte ('setosa', 5.1) sein, ist {p[0]!r}. laenge als float?"
+          m = mittel_pro_gruppe(p)
+          assert set(m) == {"setosa", "versicolor", "virginica"}, f"Falsche Schlüssel: {set(m)}"
+          assert abs(m["setosa"] - 5.0) < 1e-9 and abs(m["versicolor"] - 6.7) < 1e-9, f"Mittelwerte stimmen nicht: {m}"
+          assert "setosa: 5.00" in _ausgabe, "main() sollte z. B. 'setosa: 5.00' ausgeben"
+
+      - type: free
+        question: "Warum lohnt es sich, ein Skript in kleine Funktionen plus `main()` aufzuteilen, statt alles untereinander zu schreiben?"
+        solution: |
+          - Jede Funktion hat **eine** Aufgabe und lässt sich einzeln testen und wiederverwenden.
+          - `main()` zeigt den **Ablauf** auf einen Blick (laden → verarbeiten → auswerten).
+          - Fehler lassen sich leichter eingrenzen.
+          - Mit `if __name__ == "__main__":` kann man die Funktionen importieren, ohne das ganze Skript auszuführen.
+
+      - type: vocab
+        id: name-main

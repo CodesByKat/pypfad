@@ -1,0 +1,16 @@
+{
+  "name": "PyPfad – Python & ML offline lernen",
+  "short_name": "PyPfad",
+  "description": "Python, Daten und Machine Learning offline lernen. Kostenlos, ohne Abo, ohne Leben.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f4ef",
+  "theme_color": "#2f6f5e",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

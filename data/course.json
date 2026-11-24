@@ -1,0 +1,1131 @@
+{
+ "version": "1",
+ "worlds": [
+  {
+   "id": "skript",
+   "title": "Skript-Bausteine",
+   "emoji": "🧱",
+   "description": "Schleifen, Dicts, Funktionen, Verschachtelung und das Main-Skript",
+   "lessons": [
+    {
+     "id": "skript-1",
+     "title": "Schleifen-Werkzeuge: range, enumerate, zip",
+     "vocab": [
+      "range",
+      "enumerate",
+      "zip",
+      "fstring"
+     ],
+     "intro": "In Daten-Skripten läufst du ständig über Listen: Spaltennamen, Modelle, Parameter, Dateien.\nDrei Helfer machen das viel einfacher:\n\n- `range(n)` zählt von 0 bis n-1\n- `enumerate(liste)` liefert **Position und Wert**\n- `zip(a, b)` läuft über **zwei Listen gleichzeitig**\n",
+     "exercises": [
+      {
+       "type": "info",
+       "text": "Eine `for`-Schleife nimmt nacheinander jedes Element. Alles, was **eingerückt** unter der Zeile mit dem Doppelpunkt steht, wird für jedes Element wiederholt.\n",
+       "code": "modelle = [\"LogReg\", \"KNN\", \"SVM\"]\nfor m in modelle:\n    print(\"Trainiere\", m)\nprint(\"fertig\")\n",
+       "run": true
+      },
+      {
+       "type": "predict",
+       "code": "for i in range(3):\n    print(i)\n",
+       "answer": "0\n1\n2"
+      },
+      {
+       "type": "mc",
+       "question": "Welche Zahlen liefert `range(2, 8, 2)`?",
+       "options": [
+        "2, 4, 6",
+        "2, 4, 6, 8",
+        "2, 8",
+        "0, 2, 4, 6"
+       ],
+       "answer": 0,
+       "explain": "`range(start, stop, schritt)`: Der **Stop-Wert ist nie dabei**. Also 2, 4, 6."
+      },
+      {
+       "type": "cloze",
+       "question": "Gib Position und Namen jeder Spalte aus.",
+       "code": "spalten = [\"alter\", \"bmi\", \"blutdruck\"]\nfor ___, name in ___(spalten):\n    print(i, name)\n",
+       "answers": [
+        "i",
+        "enumerate"
+       ],
+       "distractors": [
+        "range",
+        "zip",
+        "index"
+       ],
+       "explain": "`enumerate` liefert Paare `(position, wert)`, die wir direkt in `i, name` entpacken."
+      },
+      {
+       "type": "predict",
+       "code": "features = [\"alter\", \"bmi\"]\nwerte = [42, 23.5]\nfor f, w in zip(features, werte):\n    print(f\"{f}: {w}\")\n",
+       "explain": "`zip` bildet Paare aus beiden Listen. Der f-String `f\"{f}: {w}\"` setzt die Werte in den Text ein.",
+       "answer": "alter: 42\nbmi: 23.5"
+      },
+      {
+       "type": "vocab",
+       "id": "enumerate"
+      },
+      {
+       "type": "parsons",
+       "question": "Summiere nur die positiven Werte und gib die Summe aus.",
+       "code": "summe = 0\nfor wert in werte:\n    if wert > 0:\n        summe += wert\nprint(summe)\n",
+       "distractors": [
+        "return summe"
+       ],
+       "explain": "`summe = 0` steht **vor** der Schleife, `print` **danach** (nicht eingerückt), sonst würde bei jedem Durchlauf gedruckt."
+      },
+      {
+       "type": "code",
+       "question": "Gib für jede Spalte Position und Namen im Format `0: alter` aus (eine Zeile pro Spalte).\n",
+       "starter": "spalten = [\"alter\", \"bmi\", \"blutdruck\"]\n\n# dein Code\n",
+       "solution": "spalten = [\"alter\", \"bmi\", \"blutdruck\"]\nfor i, name in enumerate(spalten):\n    print(f\"{i}: {name}\")\n",
+       "hint": "`for i, name in enumerate(spalten):` und darin `print(f\"{i}: {name}\")`",
+       "tests": "zeilen = _ausgabe.strip().splitlines()\nassert zeilen == [\"0: alter\", \"1: bmi\", \"2: blutdruck\"], f\"Erwartet 3 Zeilen wie '0: alter', bekommen: {zeilen}\"\n"
+      },
+      {
+       "type": "vocab",
+       "id": "zip"
+      }
+     ]
+    },
+    {
+     "id": "skript-2",
+     "title": "Dictionaries, Zählen, Comprehensions",
+     "vocab": [
+      "dict-items",
+      "dict-get",
+      "listcomp",
+      "dictcomp"
+     ],
+     "intro": "Dictionaries ordnen **Schlüssel → Wert** zu, z. B. Modellname → Score oder Klasse → Anzahl.\nComprehensions bauen Listen und Dicts in einer Zeile, typisch zum Umbenennen, Filtern und Umrechnen.\n",
+     "exercises": [
+      {
+       "type": "info",
+       "text": "Mit `.items()` bekommst du Schlüssel **und** Wert in einer Schleife.\n",
+       "code": "scores = {\"LogReg\": 0.91, \"KNN\": 0.88}\nfor modell, score in scores.items():\n    print(modell, \"->\", score)\nscores[\"SVM\"] = 0.93   # neuer Eintrag\nprint(len(scores))\n",
+       "run": true
+      },
+      {
+       "type": "mc",
+       "question": "Wie läufst du über Schlüssel **und** Werte eines Dicts `d`?",
+       "options": [
+        "`for k, v in d.items():`",
+        "`for k, v in d:`",
+        "`for k, v in enumerate(d):`",
+        "`for k, v in d.values():`"
+       ],
+       "answer": 0,
+       "explain": "`for k in d` liefert nur die Schlüssel. `.items()` liefert Paare `(schlüssel, wert)`."
+      },
+      {
+       "type": "predict",
+       "code": "labels = [\"a\", \"b\", \"a\", \"c\", \"a\"]\nzaehler = {}\nfor l in labels:\n    zaehler[l] = zaehler.get(l, 0) + 1\nprint(zaehler)\n",
+       "explain": "`zaehler.get(l, 0)` liefert den bisherigen Wert oder 0, wenn der Schlüssel noch fehlt. Das klassische Zähl-Muster!",
+       "answer": "{'a': 3, 'b': 1, 'c': 1}"
+      },
+      {
+       "type": "predict",
+       "question": "Was liefert diese List Comprehension?",
+       "code": "quadrate = [x ** 2 for x in [1, 2, 3, 4] if x % 2 == 0]\nprint(quadrate)\n",
+       "options": [
+        "`[4, 16]`",
+        "`[1, 4, 9, 16]`",
+        "`[1, 9]`",
+        "`[2, 4]`"
+       ],
+       "answer": 0,
+       "explain": "Lies von hinten: für jedes `x` aus der Liste, **wenn** `x` gerade ist, nimm `x ** 2`."
+      },
+      {
+       "type": "cloze",
+       "question": "Baue ein Dict: Spaltenname → Länge des Namens.",
+       "code": "namen = [\"alter\", \"bmi\"]\nlaengen = {___: len(name) ___ name in namen}\n",
+       "answers": [
+        "name",
+        "for"
+       ],
+       "distractors": [
+        "len",
+        "in",
+        "if"
+       ],
+       "explain": "Dict Comprehension: `{schlüssel: wert for element in liste}`"
+      },
+      {
+       "type": "parsons",
+       "question": "Gib für jedes Modell jede Metrik aus (Dict in Dict).",
+       "code": "for modell, scores in ergebnisse.items():\n    for metrik, wert in scores.items():\n        print(modell, metrik, wert)\n",
+       "explain": "Die innere Schleife läuft über das innere Dict `scores`. Typisch für Ergebnisse von mehreren Modellen."
+      },
+      {
+       "type": "vocab",
+       "id": "dict-get"
+      },
+      {
+       "type": "code",
+       "question": "Zähle, wie oft jede Klasse in `y` vorkommt. Speichere das Ergebnis als Dict in `haeufigkeit`, z. B. `{\"setosa\": 2, ...}`.\n",
+       "starter": "y = [\"setosa\", \"virginica\", \"setosa\", \"versicolor\", \"virginica\", \"virginica\"]\n\nhaeufigkeit = {}\n# dein Code\n",
+       "solution": "y = [\"setosa\", \"virginica\", \"setosa\", \"versicolor\", \"virginica\", \"virginica\"]\n\nhaeufigkeit = {}\nfor klasse in y:\n    haeufigkeit[klasse] = haeufigkeit.get(klasse, 0) + 1\n",
+       "hint": "Muster: `haeufigkeit[klasse] = haeufigkeit.get(klasse, 0) + 1` in einer Schleife über `y`.",
+       "tests": "assert isinstance(haeufigkeit, dict), \"haeufigkeit sollte ein Dict sein\"\nassert haeufigkeit == {\"setosa\": 2, \"virginica\": 3, \"versicolor\": 1}, f\"Bekommen: {haeufigkeit}\"\n"
+      },
+      {
+       "type": "vocab",
+       "id": "listcomp"
+      }
+     ]
+    },
+    {
+     "id": "skript-3",
+     "title": "Funktionen bauen",
+     "vocab": [
+      "def-return",
+      "default-param",
+      "return-tuple"
+     ],
+     "intro": "Funktionen sind die Bausteine jedes Skripts: einmal schreiben, oft benutzen, einzeln testen.\nEine Funktion **bekommt** Werte (Parameter) und **gibt** mit `return` ein Ergebnis zurück.\n",
+     "exercises": [
+      {
+       "type": "info",
+       "text": "Parameter können **Standardwerte** haben. Mit `return` kannst du auch mehrere Werte auf einmal zurückgeben (als Tupel).\n",
+       "code": "def skaliere(werte, faktor=2):\n    return [w * faktor for w in werte]\n\nprint(skaliere([1, 2, 3]))\nprint(skaliere([1, 2, 3], faktor=10))\n",
+       "run": true
+      },
+      {
+       "type": "mc",
+       "question": "Was gibt eine Funktion zurück, die **kein** `return` hat?",
+       "options": [
+        "`None`",
+        "`0`",
+        "Den Wert der letzten Zeile",
+        "Einen Fehler"
+       ],
+       "answer": 0,
+       "explain": "Ohne `return` gibt jede Funktion `None` zurück. Häufiger Fehler: `print` statt `return` benutzt."
+      },
+      {
+       "type": "cloze",
+       "question": "Ergänze den Standardwert 1 und den richtigen Parameter.",
+       "code": "def skaliere(werte, faktor=___):\n    return [w * faktor for w in ___]\n",
+       "answers": [
+        "1",
+        "werte"
+       ],
+       "distractors": [
+        "0",
+        "faktor",
+        "return"
+       ]
+      },
+      {
+       "type": "predict",
+       "code": "def min_max(werte):\n    return min(werte), max(werte)\n\nlo, hi = min_max([3, 9, 1])\nprint(lo, hi)\n",
+       "explain": "`return a, b` gibt ein Tupel zurück, das wir direkt in `lo, hi` entpacken. Wie bei `X_train, X_test = ...`!",
+       "answer": "1 9"
+      },
+      {
+       "type": "parsons",
+       "question": "Baue die Funktion `mittelwert`.",
+       "code": "def mittelwert(werte):\n    summe = 0\n    for w in werte:\n        summe += w\n    return summe / len(werte)\n",
+       "distractors": [
+        "print(summe / len(werte))"
+       ],
+       "explain": "`return` steht nach der Schleife auf Funktions-Ebene, sonst würde die Funktion schon nach dem ersten Wert enden."
+      },
+      {
+       "type": "free",
+       "question": "Erkläre in eigenen Worten: Was ist der Unterschied zwischen `print(...)` und `return ...` in einer Funktion?",
+       "solution": "`print` **zeigt** einen Wert nur auf dem Bildschirm an. Das Programm kann damit nicht weiterrechnen.\n`return` **gibt** den Wert an die aufrufende Stelle zurück, sodass man ihn in einer Variable speichern und weiterverwenden kann (z. B. `score = bewerte(modell)`). Danach endet die Funktion.\n"
+      },
+      {
+       "type": "code",
+       "question": "Schreibe `normalisiere(werte)`: Sie gibt eine **neue Liste** zurück, in der jeder Wert per Min-Max-Skalierung auf 0 bis 1 gebracht wird:\n`(w - min) / (max - min)`\n",
+       "starter": "def normalisiere(werte):\n    # dein Code\n    ...\n\nprint(normalisiere([10, 20, 30]))\n",
+       "solution": "def normalisiere(werte):\n    lo, hi = min(werte), max(werte)\n    return [(w - lo) / (hi - lo) for w in werte]\n\nprint(normalisiere([10, 20, 30]))\n",
+       "hint": "Berechne zuerst `lo = min(werte)` und `hi = max(werte)`, dann eine List Comprehension.",
+       "tests": "r = normalisiere([10, 20, 30])\nassert r is not None, \"Die Funktion gibt nichts zurück. return vergessen?\"\nassert [round(x, 6) for x in r] == [0.0, 0.5, 1.0], f\"normalisiere([10, 20, 30]) sollte [0.0, 0.5, 1.0] sein, ist {r}\"\nassert [round(x, 6) for x in normalisiere([5, 0, 10])] == [0.5, 0.0, 1.0], \"Mit [5, 0, 10] stimmt es noch nicht\"\n"
+      },
+      {
+       "type": "vocab",
+       "id": "default-param"
+      }
+     ]
+    },
+    {
+     "id": "skript-4",
+     "title": "Verschachtelung: Schleife in Schleife",
+     "vocab": [
+      "break-continue",
+      "product",
+      "nested-listcomp"
+     ],
+     "intro": "Verschachtelte Schleifen sind der Kern vieler ML-Skripte: **für jedes Modell → für jeden Parameter → trainiere und bewerte**.\nWichtig ist, genau zu wissen, auf welcher Ebene (Einrückung) etwas passiert.\n",
+     "exercises": [
+      {
+       "type": "predict",
+       "code": "for a in [1, 2]:\n    for b in [\"x\", \"y\"]:\n        print(a, b)\n",
+       "explain": "Die innere Schleife läuft **komplett** durch, bevor die äußere einen Schritt weitergeht.",
+       "answer": "1 x\n1 y\n2 x\n2 y"
+      },
+      {
+       "type": "mc",
+       "question": "Die äußere Schleife hat 3 Durchläufe, die innere 4. Wie oft wird der Code in der **inneren** Schleife ausgeführt?",
+       "options": [
+        "12",
+        "7",
+        "4",
+        "3"
+       ],
+       "answer": 0,
+       "explain": "3 × 4 = 12. Bei einem Grid mit 3 Tiefen und 4 Lernraten trainierst du also 12 Modelle."
+      },
+      {
+       "type": "cloze",
+       "question": "Überspringe fehlende Werte (`None`) und brich ab, sobald ein Wert über 100 liegt.",
+       "code": "for wert in werte:\n    if wert is None:\n        ___\n    if wert > 100:\n        ___\n    print(wert)\n",
+       "answers": [
+        "continue",
+        "break"
+       ],
+       "distractors": [
+        "pass",
+        "return",
+        "stop"
+       ],
+       "explain": "`continue` springt zum **nächsten** Durchlauf, `break` beendet die Schleife **ganz**."
+      },
+      {
+       "type": "parsons",
+       "question": "Manuelle Gridsuche: finde die beste Kombination aus Tiefe und Lernrate.",
+       "code": "bestes = None\nfor tiefe in [2, 4, 8]:\n    for lr in [0.1, 0.01]:\n        score = bewerte(tiefe, lr)\n        if bestes is None or score > bestes[0]:\n            bestes = (score, tiefe, lr)\nprint(bestes)\n",
+       "explain": "`bestes` wird **vor** den Schleifen angelegt, innen aktualisiert und **nach** den Schleifen ausgegeben. Genau das macht später `GridSearchCV` für dich."
+      },
+      {
+       "type": "predict",
+       "code": "tabelle = [[i * j for j in range(3)] for i in range(2)]\nprint(tabelle)\n",
+       "explain": "Die äußere Comprehension (über `i`) erzeugt die Zeilen, die innere (über `j`) die Werte jeder Zeile.",
+       "answer": "[[0, 0, 0], [0, 1, 2]]"
+      },
+      {
+       "type": "vocab",
+       "id": "product"
+      },
+      {
+       "type": "code",
+       "question": "Erzeuge alle Kombinationen aus `tiefen` und `kriterien` als **Liste von Dicts** in `kombis`, z. B.\n`{\"tiefe\": 2, \"kriterium\": \"gini\"}`. Reihenfolge: erst nach Tiefe, dann nach Kriterium.\n",
+       "starter": "tiefen = [2, 4]\nkriterien = [\"gini\", \"entropy\"]\n\nkombis = []\n# dein Code\n\nfor k in kombis:\n    print(k)\n",
+       "solution": "tiefen = [2, 4]\nkriterien = [\"gini\", \"entropy\"]\n\nkombis = []\nfor t in tiefen:\n    for k in kriterien:\n        kombis.append({\"tiefe\": t, \"kriterium\": k})\n\nfor k in kombis:\n    print(k)\n",
+       "hint": "Zwei verschachtelte `for`-Schleifen, innen `kombis.append({...})`.",
+       "tests": "assert len(kombis) == 4, f\"Es sollten 4 Kombinationen sein, sind {len(kombis)}\"\nassert kombis[0] == {\"tiefe\": 2, \"kriterium\": \"gini\"}, f\"Erste Kombination falsch: {kombis[0]}\"\nassert kombis[1] == {\"tiefe\": 2, \"kriterium\": \"entropy\"}, \"Reihenfolge: erst alle Kriterien für Tiefe 2\"\nassert kombis[3] == {\"tiefe\": 4, \"kriterium\": \"entropy\"}\n"
+      },
+      {
+       "type": "vocab",
+       "id": "break-continue"
+      }
+     ]
+    },
+    {
+     "id": "skript-5",
+     "title": "Projekt: Das Main-Skript",
+     "project": true,
+     "vocab": [
+      "name-main",
+      "str-split",
+      "splitlines",
+      "round-format"
+     ],
+     "intro": "Ein gutes Skript hat eine feste Reihenfolge:\n\n- Imports\n- Konstanten (Pfade, Parameter) in GROSSBUCHSTABEN\n- Funktionen, die jeweils **einen** Schritt erledigen\n- `main()`, das die Schritte verbindet: **laden → verarbeiten → auswerten → ausgeben**\n- ganz unten: `if __name__ == \"__main__\": main()`\n",
+     "exercises": [
+      {
+       "type": "mc",
+       "question": "Wozu dient `if __name__ == \"__main__\":`?",
+       "options": [
+        "Der Code darunter läuft nur, wenn die Datei direkt gestartet wird, nicht beim Importieren",
+        "Er macht `main` zur ersten Funktion, die Python liest",
+        "Er ist Pflicht, sonst startet Python nicht",
+        "Er importiert alle Module"
+       ],
+       "answer": 0,
+       "explain": "So kannst du deine Funktionen in einem anderen Skript oder Notebook importieren, ohne dass gleich alles losläuft."
+      },
+      {
+       "type": "parsons",
+       "question": "Bring das Skript in die richtige Reihenfolge.",
+       "code": "import statistics\nDATEN = [4, 8, 15, 16, 23, 42]\ndef lade_daten():\n    return DATEN\ndef auswerten(werte):\n    return statistics.mean(werte)\ndef main():\n    werte = lade_daten()\n    print(auswerten(werte))\nif __name__ == \"__main__\":\n    main()\n",
+       "explain": "Funktionen müssen definiert sein, **bevor** `main()` am Ende aufgerufen wird. Deshalb steht der Aufruf ganz unten."
+      },
+      {
+       "type": "mc",
+       "question": "Wo gehören Werte wie `TEST_SIZE = 0.2` oder `DATEI = \"daten.csv\"` hin?",
+       "options": [
+        "Oben als Konstanten, nach den Imports",
+        "In jede Funktion, die sie braucht",
+        "In `main()` ganz unten",
+        "In die letzte Zeile"
+       ],
+       "answer": 0,
+       "explain": "Konstanten oben machen das Skript leicht anpassbar: Du änderst einen Wert an genau einer Stelle."
+      },
+      {
+       "type": "predict",
+       "code": "zeile = \"setosa,5.1\"\nart, laenge = zeile.split(\",\")\nprint(art, float(laenge) * 2)\n",
+       "explain": "`split(\",\")` zerlegt den Text an jedem Komma in eine Liste. `float(...)` wandelt Text in eine Zahl um.",
+       "answer": "setosa 10.2"
+      },
+      {
+       "type": "code",
+       "question": "**Projekt:** Vervollständige `parse_zeilen` und `mittel_pro_gruppe`, damit das Main-Skript die mittlere Länge pro Art ausgibt.\n\n- `parse_zeilen(text)` → Liste von Tupeln `(art, laenge)` mit `laenge` als `float` (Kopfzeile überspringen!)\n- `mittel_pro_gruppe(paare)` → Dict `{art: mittelwert}`\n",
+       "starter": "ROHDATEN = \"\"\"art,laenge\nsetosa,5.1\nversicolor,7.0\nsetosa,4.9\nvirginica,6.3\nversicolor,6.4\n\"\"\"\n\ndef parse_zeilen(text):\n    paare = []\n    # dein Code\n    return paare\n\ndef mittel_pro_gruppe(paare):\n    ergebnis = {}\n    # dein Code\n    return ergebnis\n\ndef main():\n    paare = parse_zeilen(ROHDATEN)\n    for art, mittel in mittel_pro_gruppe(paare).items():\n        print(f\"{art}: {mittel:.2f}\")\n\nif __name__ == \"__main__\":\n    main()\n",
+       "solution": "ROHDATEN = \"\"\"art,laenge\nsetosa,5.1\nversicolor,7.0\nsetosa,4.9\nvirginica,6.3\nversicolor,6.4\n\"\"\"\n\ndef parse_zeilen(text):\n    paare = []\n    for zeile in text.strip().splitlines()[1:]:\n        art, laenge = zeile.split(\",\")\n        paare.append((art, float(laenge)))\n    return paare\n\ndef mittel_pro_gruppe(paare):\n    gruppen = {}\n    for art, laenge in paare:\n        gruppen.setdefault(art, []).append(laenge)\n    ergebnis = {}\n    for art, werte in gruppen.items():\n        ergebnis[art] = sum(werte) / len(werte)\n    return ergebnis\n\ndef main():\n    paare = parse_zeilen(ROHDATEN)\n    for art, mittel in mittel_pro_gruppe(paare).items():\n        print(f\"{art}: {mittel:.2f}\")\n\nif __name__ == \"__main__\":\n    main()\n",
+       "hint": "`text.strip().splitlines()[1:]` liefert alle Zeilen ohne Kopfzeile.\nFür die Gruppen: erst ein Dict `art → Liste von Längen` sammeln, dann pro Art `sum(werte) / len(werte)`.\n",
+       "tests": "p = parse_zeilen(ROHDATEN)\nassert isinstance(p, list) and len(p) == 5, f\"parse_zeilen sollte 5 Paare liefern (ohne Kopfzeile), liefert {p}\"\nassert p[0] == (\"setosa\", 5.1), f\"Erstes Paar sollte ('setosa', 5.1) sein, ist {p[0]!r}. laenge als float?\"\nm = mittel_pro_gruppe(p)\nassert set(m) == {\"setosa\", \"versicolor\", \"virginica\"}, f\"Falsche Schlüssel: {set(m)}\"\nassert abs(m[\"setosa\"] - 5.0) < 1e-9 and abs(m[\"versicolor\"] - 6.7) < 1e-9, f\"Mittelwerte stimmen nicht: {m}\"\nassert \"setosa: 5.00\" in _ausgabe, \"main() sollte z. B. 'setosa: 5.00' ausgeben\"\n"
+      },
+      {
+       "type": "free",
+       "question": "Warum lohnt es sich, ein Skript in kleine Funktionen plus `main()` aufzuteilen, statt alles untereinander zu schreiben?",
+       "solution": "- Jede Funktion hat **eine** Aufgabe und lässt sich einzeln testen und wiederverwenden.\n- `main()` zeigt den **Ablauf** auf einen Blick (laden → verarbeiten → auswerten).\n- Fehler lassen sich leichter eingrenzen.\n- Mit `if __name__ == \"__main__\":` kann man die Funktionen importieren, ohne das ganze Skript auszuführen.\n"
+      },
+      {
+       "type": "vocab",
+       "id": "name-main"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sklearn",
+   "title": "scikit-learn: Splits & Pipelines",
+   "emoji": "🤖",
+   "description": "Train-Test-Split, Data Leakage, benannte Pipelines, ColumnTransformer, GridSearch",
+   "lessons": [
+    {
+     "id": "sklearn-1",
+     "title": "X, y und der Train-Test-Split",
+     "vocab": [
+      "X-y",
+      "train_test_split",
+      "random_state",
+      "stratify",
+      "shape"
+     ],
+     "intro": "Jedes überwachte ML-Problem hat zwei Teile:\n\n- `X`: die **Features**, eine Tabelle mit einer Zeile pro Beobachtung (Form: `(n_zeilen, n_spalten)`)\n- `y`: das **Ziel**, ein Wert pro Zeile\n\nBevor wir ein Modell trainieren, legen wir einen Teil der Daten als **Testdaten** zur Seite. Nur so können wir ehrlich prüfen, wie gut das Modell bei **neuen** Daten ist.\n",
+     "exercises": [
+      {
+       "type": "info",
+       "text": "scikit-learn bringt kleine Beispiel-Datensätze mit, z. B. die Iris-Blumen: 150 Blüten, 4 Messwerte, 3 Arten.\n",
+       "code": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\nprint(\"X:\", X.shape, \" y:\", y.shape)\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)\nprint(\"Train:\", X_train.shape, \" Test:\", X_test.shape)\n",
+       "run": true
+      },
+      {
+       "type": "mc",
+       "question": "Warum teilen wir die Daten in Trainings- und Testdaten?",
+       "options": [
+        "Um zu messen, wie gut das Modell mit Daten klarkommt, die es beim Training nicht gesehen hat",
+        "Damit das Training schneller geht",
+        "Weil scikit-learn sonst einen Fehler wirft",
+        "Um mehr Trainingsdaten zu bekommen"
+       ],
+       "answer": 0,
+       "explain": "Auf den Trainingsdaten sieht fast jedes Modell gut aus (es kann sie auswendig lernen). Erst die Testdaten zeigen die echte Leistung."
+      },
+      {
+       "type": "cloze",
+       "question": "Teile 20 % als Testdaten ab, reproduzierbar und mit gleichen Klassenanteilen.",
+       "code": "X_train, X_test, y_train, y_test = ___(\n    X, y, test_size=___, random_state=42, ___=y\n)\n",
+       "answers": [
+        "train_test_split",
+        "0.2",
+        "stratify"
+       ],
+       "distractors": [
+        "split",
+        "20",
+        "shuffle",
+        "0.8"
+       ],
+       "explain": "`test_size=0.2` heißt 20 % Test. `stratify=y` sorgt dafür, dass jede Klasse in Train und Test gleich häufig vorkommt."
+      },
+      {
+       "type": "mc",
+       "question": "In welcher Reihenfolge gibt `train_test_split(X, y)` die Teile zurück?",
+       "options": [
+        "`X_train, X_test, y_train, y_test`",
+        "`X_train, y_train, X_test, y_test`",
+        "`X_test, X_train, y_test, y_train`",
+        "`X_train, X_test`"
+       ],
+       "answer": 0,
+       "explain": "Merksatz: **erst alle X, dann alle y**, jeweils erst Train, dann Test."
+      },
+      {
+       "type": "predict",
+       "question": "Ein Datensatz hat 200 Zeilen. Wie viele Zeilen hat `X_test` bei `test_size=0.25`?",
+       "code": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)\nprint(len(X_test))\n",
+       "options": [
+        "50",
+        "150",
+        "25",
+        "0.25"
+       ],
+       "answer": 0
+      },
+      {
+       "type": "mc",
+       "question": "Was bewirkt `random_state=42`?",
+       "options": [
+        "Die zufällige Aufteilung ist bei jedem Lauf gleich, also reproduzierbar",
+        "Es werden 42 Zeilen für den Test genommen",
+        "Das Modell wird 42-mal trainiert",
+        "Es werden 42 % der Daten gemischt"
+       ],
+       "answer": 0,
+       "explain": "Die Zahl selbst ist egal. Wichtig ist, dass sie fest ist. Dann bekommst du (und andere) exakt dieselbe Aufteilung."
+      },
+      {
+       "type": "vocab",
+       "id": "stratify"
+      },
+      {
+       "type": "code",
+       "question": "Lade Iris und teile **30 %** als Testdaten ab, **stratifiziert**, mit `random_state=0`.\nGib danach die Shapes von `X_train` und `X_test` aus.\n",
+       "starter": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\n\n# dein Code\n",
+       "solution": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_iris(return_X_y=True)\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.3, random_state=0, stratify=y\n)\nprint(X_train.shape, X_test.shape)\n",
+       "hint": "`train_test_split(X, y, test_size=0.3, random_state=0, stratify=y)`",
+       "tests": "import numpy as np\nassert X_train.shape == (105, 4), f\"X_train sollte (105, 4) sein, ist {X_train.shape}\"\nassert X_test.shape == (45, 4), f\"X_test sollte (45, 4) sein, ist {X_test.shape}\"\nassert list(np.bincount(y_test)) == [15, 15, 15], \"Die Klassen im Test sind nicht gleich verteilt. stratify=y vergessen?\"\n"
+      },
+      {
+       "type": "vocab",
+       "id": "train_test_split"
+      }
+     ]
+    },
+    {
+     "id": "sklearn-2",
+     "title": "fit, transform, predict und Data Leakage",
+     "vocab": [
+      "fit",
+      "transform",
+      "fit_transform",
+      "predict",
+      "score",
+      "StandardScaler",
+      "data-leakage"
+     ],
+     "intro": "Alle scikit-learn-Objekte sprechen dieselbe Sprache:\n\n- **Modelle** (Estimator): `fit(X, y)` lernt, `predict(X)` sagt vorher, `score(X, y)` bewertet\n- **Transformer** (z. B. Scaler): `fit(X)` lernt Kennzahlen, `transform(X)` wendet sie an\n\nDie wichtigste Regel: **Gelernt (fit) wird nur auf den Trainingsdaten.** Sonst sickern Infos aus dem Test ins Training: *Data Leakage*.\n",
+     "exercises": [
+      {
+       "type": "info",
+       "text": "Der `StandardScaler` lernt beim `fit` Mittelwert und Standardabweichung jeder Spalte und rechnet beim `transform` jede Spalte auf Mittelwert 0 und Streuung 1 um.\n",
+       "code": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)\n\nscaler = StandardScaler()\nX_train_s = scaler.fit_transform(X_train)   # lernen + anwenden\nX_test_s = scaler.transform(X_test)         # nur anwenden!\n\nmodell = LogisticRegression()\nmodell.fit(X_train_s, y_train)\nprint(\"Genauigkeit:\", modell.score(X_test_s, y_test))\n",
+       "run": true
+      },
+      {
+       "type": "mc",
+       "question": "Welche Variante ist korrekt?",
+       "options": [
+        "Scaler mit `fit` auf `X_train`, dann `transform` auf `X_train` und `X_test`",
+        "Scaler mit `fit` auf allen Daten `X`, dann splitten",
+        "`fit_transform` auf `X_train` **und** `fit_transform` auf `X_test`",
+        "Den Test-Datensatz gar nicht skalieren"
+       ],
+       "answer": 0,
+       "explain": "Der Scaler darf nur aus den Trainingsdaten lernen. Auf die Testdaten wird **dieselbe** Umrechnung angewendet, wie später auf echte neue Daten."
+      },
+      {
+       "type": "cloze",
+       "code": "scaler = StandardScaler()\nX_train_s = scaler.___(X_train)\nX_test_s = scaler.___(X_test)\n",
+       "answers": [
+        "fit_transform",
+        "transform"
+       ],
+       "distractors": [
+        "fit",
+        "predict",
+        "fit_predict"
+       ],
+       "explain": "`fit_transform` = `fit` + `transform` in einem Schritt, aber nur für Trainingsdaten!"
+      },
+      {
+       "type": "mc",
+       "question": "Welche dieser Objekte haben eine `.transform()`-Methode?",
+       "options": [
+        "`StandardScaler`",
+        "`OneHotEncoder`",
+        "`SimpleImputer`",
+        "`LogisticRegression`"
+       ],
+       "answer": [
+        0,
+        1,
+        2
+       ],
+       "explain": "Scaler, Encoder und Imputer **verändern** Daten (Transformer). `LogisticRegression` ist ein Modell. Es hat `predict`, aber kein `transform`."
+      },
+      {
+       "type": "predict",
+       "code": "import numpy as np\nfrom sklearn.preprocessing import StandardScaler\n\nX = np.array([[1.0], [2.0], [3.0]])\ns = StandardScaler().fit(X)\nprint(s.mean_)\n",
+       "explain": "Nach dem `fit` stehen die gelernten Kennzahlen in Attributen mit Unterstrich am Ende: `mean_`, `scale_`, `coef_` …",
+       "answer": "[2.]"
+      },
+      {
+       "type": "free",
+       "question": "Erkläre in eigenen Worten, was **Data Leakage** ist und warum es gefährlich ist.",
+       "solution": "Data Leakage bedeutet, dass Informationen aus den Testdaten (oder aus der Zukunft) beim Training benutzt werden, z. B. wenn der Scaler auf allen Daten gefittet wird.\nDas Modell sieht dann besser aus, als es wirklich ist: Die Test-Bewertung ist **zu optimistisch**, und bei echten neuen Daten schneidet es schlechter ab.\n"
+      },
+      {
+       "type": "code",
+       "question": "Skaliere korrekt (Scaler **nur** auf Trainingsdaten fitten!), trainiere `LogisticRegression(max_iter=1000)` und speichere die Test-Genauigkeit in `acc`.\n",
+       "starter": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1, stratify=y)\n\nscaler = StandardScaler()\n# dein Code\n\nprint(\"acc:\", acc)\n",
+       "solution": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1, stratify=y)\n\nscaler = StandardScaler()\nX_train_s = scaler.fit_transform(X_train)\nX_test_s = scaler.transform(X_test)\n\nmodell = LogisticRegression(max_iter=1000)\nmodell.fit(X_train_s, y_train)\nacc = modell.score(X_test_s, y_test)\n\nprint(\"acc:\", acc)\n",
+       "hint": "`X_train_s = scaler.fit_transform(X_train)`, `X_test_s = scaler.transform(X_test)`, dann `modell.fit(...)` und `acc = modell.score(X_test_s, y_test)`.",
+       "tests": "import numpy as np\nassert np.allclose(scaler.mean_, X_train.mean(axis=0)), \"Der Scaler wurde nicht (nur) auf X_train gefittet. Data Leakage!\"\nassert 0.85 < acc <= 1.0, f\"acc = {acc} wirkt unplausibel\"\n"
+      },
+      {
+       "type": "vocab",
+       "id": "fit_transform"
+      }
+     ]
+    },
+    {
+     "id": "sklearn-3",
+     "title": "Pipelines mit Namen",
+     "vocab": [
+      "Pipeline",
+      "make_pipeline",
+      "named_steps"
+     ],
+     "intro": "Eine **Pipeline** klebt Vorverarbeitung und Modell zu **einem** Objekt zusammen. Jeder Schritt bekommt einen **Namen**:\n\n```python\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"modell\", LogisticRegression()),\n])\n```\n\nDann reicht ein einziges `pipe.fit(X_train, y_train)`, und die Pipeline macht automatisch alles richtig: `fit_transform` beim Training, `transform` bei der Vorhersage. Kein Leakage mehr aus Versehen.\n",
+     "exercises": [
+      {
+       "type": "info",
+       "text": "Die Pipeline verhält sich wie ein Modell: `fit`, `predict`, `score`.",
+       "code": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.neighbors import KNeighborsClassifier\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)\n\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"knn\", KNeighborsClassifier(n_neighbors=5)),\n])\npipe.fit(X_train, y_train)\nprint(pipe.score(X_test, y_test))\nprint(pipe.named_steps[\"scaler\"].mean_)\n",
+       "run": true
+      },
+      {
+       "type": "cloze",
+       "code": "pipe = ___([\n    (\"scaler\", StandardScaler()),\n    (\"modell\", LogisticRegression()),\n])\npipe.___(X_train, y_train)\nprint(pipe.___(X_test, y_test))\n",
+       "answers": [
+        "Pipeline",
+        "fit",
+        "score"
+       ],
+       "distractors": [
+        "make_pipeline",
+        "transform",
+        "predict"
+       ],
+       "explain": "`Pipeline` bekommt eine **Liste von Tupeln** `(name, objekt)`. `make_pipeline` bekäme die Objekte ohne Namen."
+      },
+      {
+       "type": "mc",
+       "question": "Warum sind Pipelines besonders bei Cross-Validation wichtig?",
+       "options": [
+        "Weil der Scaler dann in jedem Fold nur auf den Trainingsteil gefittet wird",
+        "Weil Cross-Validation ohne Pipeline nicht funktioniert",
+        "Weil Pipelines das Modell genauer machen",
+        "Weil man dann keine Testdaten mehr braucht"
+       ],
+       "answer": 0,
+       "explain": "Ohne Pipeline würdest du die Daten vorher komplett skalieren und jeder Validierungs-Fold hätte schon „mitgelernt“."
+      },
+      {
+       "type": "predict",
+       "code": "from sklearn.pipeline import make_pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\npipe = make_pipeline(StandardScaler(), LogisticRegression())\nprint(list(pipe.named_steps))\n",
+       "explain": "`make_pipeline` vergibt die Namen automatisch: der Klassenname in Kleinbuchstaben.",
+       "answer": "['standardscaler', 'logisticregression']"
+      },
+      {
+       "type": "parsons",
+       "question": "Baue eine benannte Pipeline, trainiere sie und gib die Genauigkeit aus.",
+       "code": "pipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"knn\", KNeighborsClassifier(n_neighbors=5)),\n])\npipe.fit(X_train, y_train)\ny_pred = pipe.predict(X_test)\nprint(accuracy_score(y_test, y_pred))\n",
+       "distractors": [
+        "pipe.fit(X_test, y_test)"
+       ],
+       "explain": "Gefittet wird auf **Train**, vorhergesagt auf **Test**. Die Schritt-Tupel sind innerhalb der Liste eingerückt."
+      },
+      {
+       "type": "mc",
+       "question": "Wie kommst du an den Schritt `\"knn\"` der Pipeline `pipe`?",
+       "options": [
+        "`pipe.named_steps[\"knn\"]`",
+        "`pipe[\"knn\"]`",
+        "`pipe.knn`",
+        "`pipe.steps[\"knn\"]`"
+       ],
+       "answer": [
+        0,
+        1
+       ],
+       "explain": "Beides geht: `named_steps[...]` und direkt `pipe[\"knn\"]`. `pipe.steps` ist dagegen eine **Liste** von Tupeln."
+      },
+      {
+       "type": "vocab",
+       "id": "named_steps"
+      },
+      {
+       "type": "code",
+       "question": "Baue für den Wein-Datensatz eine Pipeline `pipe` mit den Schritten **`\"scaler\"`** (`StandardScaler`) und **`\"svm\"`** (`SVC()`), trainiere sie und speichere die Test-Genauigkeit in `acc`.\n",
+       "starter": "from sklearn.datasets import load_wine\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.svm import SVC\n\nX, y = load_wine(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)\n\n# dein Code\n\nprint(\"acc:\", acc)\n",
+       "solution": "from sklearn.datasets import load_wine\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.svm import SVC\n\nX, y = load_wine(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0, stratify=y)\n\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"svm\", SVC()),\n])\npipe.fit(X_train, y_train)\nacc = pipe.score(X_test, y_test)\n\nprint(\"acc:\", acc)\n",
+       "hint": "`pipe = Pipeline([(\"scaler\", StandardScaler()), (\"svm\", SVC())])`, dann `fit` und `score`.",
+       "tests": "from sklearn.pipeline import Pipeline as _P\nfrom sklearn.svm import SVC as _S\nassert isinstance(pipe, _P), \"pipe sollte eine Pipeline sein\"\nassert list(pipe.named_steps) == [\"scaler\", \"svm\"], f\"Schrittnamen sollten ['scaler', 'svm'] sein, sind {list(pipe.named_steps)}\"\nassert isinstance(pipe[\"svm\"], _S), \"Der Schritt 'svm' sollte ein SVC sein\"\nassert hasattr(pipe[\"svm\"], \"support_\"), \"Die Pipeline wurde noch nicht gefittet\"\nassert acc > 0.9, f\"acc = {acc}. Mit Skalierung sollte die SVM über 0.9 schaffen\"\n"
+      }
+     ]
+    },
+    {
+     "id": "sklearn-4",
+     "title": "ColumnTransformer: Zahlen und Kategorien",
+     "vocab": [
+      "ColumnTransformer",
+      "OneHotEncoder",
+      "SimpleImputer",
+      "handle_unknown"
+     ],
+     "intro": "Echte Tabellen mischen **Zahlen** (Alter, Einkommen) und **Kategorien** (Stadt, Geschlecht), oft mit Lücken.\nMit dem `ColumnTransformer` bekommt jede Spaltengruppe ihre eigene Vorverarbeitung:\n\n```python\npre = ColumnTransformer([\n    (\"num\", StandardScaler(), [\"alter\", \"einkommen\"]),\n    (\"cat\", OneHotEncoder(handle_unknown=\"ignore\"), [\"stadt\"]),\n])\n```\n\nUnd weil das wieder ein Transformer ist, kommt er als Schritt in eine Pipeline. Pipelines lassen sich **verschachteln**.\n",
+     "exercises": [
+      {
+       "type": "info",
+       "text": "So sieht das mit einem kleinen pandas-DataFrame aus:",
+       "code": "import pandas as pd\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\n\ndf = pd.DataFrame({\n    \"alter\": [25, 40, 33, 51],\n    \"einkommen\": [2800, 4200, 3500, 5100],\n    \"stadt\": [\"Berlin\", \"Köln\", \"Berlin\", \"Wien\"],\n})\npre = ColumnTransformer([\n    (\"num\", StandardScaler(), [\"alter\", \"einkommen\"]),\n    (\"cat\", OneHotEncoder(handle_unknown=\"ignore\"), [\"stadt\"]),\n])\nout = pre.fit_transform(df)\nprint(out.shape)\nprint(pre.get_feature_names_out())\n",
+       "run": true
+      },
+      {
+       "type": "mc",
+       "question": "Was macht der `OneHotEncoder` aus der Spalte `stadt` mit den Werten Berlin, Köln, Wien?",
+       "options": [
+        "Drei 0/1-Spalten, eine pro Stadt",
+        "Eine Spalte mit den Zahlen 0, 1, 2",
+        "Er löscht die Spalte",
+        "Er sortiert die Städte alphabetisch"
+       ],
+       "answer": 0,
+       "explain": "One-Hot = für jede Kategorie eine eigene Spalte mit 1 (trifft zu) oder 0. So denkt das Modell nicht, Wien wäre „größer“ als Berlin."
+      },
+      {
+       "type": "cloze",
+       "code": "pre = ColumnTransformer([\n    (\"num\", ___, [\"alter\", \"einkommen\"]),\n    (\"cat\", OneHotEncoder(handle_unknown=\"___\"), [\"stadt\"]),\n])\n",
+       "answers": [
+        "StandardScaler()",
+        "ignore"
+       ],
+       "distractors": [
+        "OneHotEncoder()",
+        "error",
+        "drop"
+       ]
+      },
+      {
+       "type": "predict",
+       "question": "Der Datensatz hat 2 Zahlen-Spalten und eine Spalte `stadt` mit 3 verschiedenen Städten. Wie viele Spalten hat das Ergebnis des ColumnTransformers oben?",
+       "code": "print(pre.fit_transform(df).shape[1])\n",
+       "options": [
+        "5",
+        "3",
+        "6",
+        "2"
+       ],
+       "answer": 0,
+       "explain": "2 skalierte Zahlen-Spalten + 3 One-Hot-Spalten = 5."
+      },
+      {
+       "type": "mc",
+       "question": "Wozu dient `handle_unknown=\"ignore\"`?",
+       "options": [
+        "Kommt bei der Vorhersage eine unbekannte Kategorie (z. B. eine neue Stadt), gibt es keinen Fehler, sondern nur Nullen",
+        "Fehlende Werte werden ignoriert",
+        "Die Spalte wird beim Training ignoriert",
+        "Warnungen werden unterdrückt"
+       ],
+       "answer": 0
+      },
+      {
+       "type": "parsons",
+       "question": "Verschachtelte Pipeline: Zahlen erst auffüllen, dann skalieren; Kategorien one-hot-kodieren; zum Schluss das Modell.",
+       "code": "num_pipe = Pipeline([\n    (\"imputer\", SimpleImputer(strategy=\"median\")),\n    (\"scaler\", StandardScaler()),\n])\npre = ColumnTransformer([\n    (\"num\", num_pipe, num_cols),\n    (\"cat\", OneHotEncoder(handle_unknown=\"ignore\"), cat_cols),\n])\nmodell = Pipeline([(\"pre\", pre), (\"clf\", LogisticRegression())])\n",
+       "explain": "Von innen nach außen: kleine Pipeline für Zahlen → ColumnTransformer → große Pipeline mit Modell."
+      },
+      {
+       "type": "vocab",
+       "id": "SimpleImputer"
+      },
+      {
+       "type": "code",
+       "question": "Baue eine Pipeline `modell` mit den Schritten `\"pre\"` (ColumnTransformer) und `\"clf\"` (`LogisticRegression()`).\nIm ColumnTransformer: `\"num\"` = Imputer (Median) + Scaler für `num_cols`, `\"cat\"` = OneHotEncoder (`handle_unknown=\"ignore\"`) für `cat_cols`.\nFitte `modell` auf `df[num_cols + cat_cols]` und `df[\"kauft\"]`.\n",
+       "starter": "import numpy as np\nimport pandas as pd\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.linear_model import LogisticRegression\n\ndf = pd.DataFrame({\n    \"alter\":     [25, 40, np.nan, 51, 29, 62, 35, 44],\n    \"einkommen\": [2800, 4200, 3500, np.nan, 3000, 5200, 3900, 4100],\n    \"stadt\":     [\"Berlin\", \"Köln\", \"Berlin\", \"Wien\", \"Köln\", \"Wien\", \"Berlin\", \"Köln\"],\n    \"kauft\":     [0, 1, 0, 1, 0, 1, 1, 1],\n})\nnum_cols = [\"alter\", \"einkommen\"]\ncat_cols = [\"stadt\"]\n\n# dein Code\n\nprint(modell.predict(df[num_cols + cat_cols]))\n",
+       "solution": "import numpy as np\nimport pandas as pd\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.linear_model import LogisticRegression\n\ndf = pd.DataFrame({\n    \"alter\":     [25, 40, np.nan, 51, 29, 62, 35, 44],\n    \"einkommen\": [2800, 4200, 3500, np.nan, 3000, 5200, 3900, 4100],\n    \"stadt\":     [\"Berlin\", \"Köln\", \"Berlin\", \"Wien\", \"Köln\", \"Wien\", \"Berlin\", \"Köln\"],\n    \"kauft\":     [0, 1, 0, 1, 0, 1, 1, 1],\n})\nnum_cols = [\"alter\", \"einkommen\"]\ncat_cols = [\"stadt\"]\n\nnum_pipe = Pipeline([\n    (\"imputer\", SimpleImputer(strategy=\"median\")),\n    (\"scaler\", StandardScaler()),\n])\npre = ColumnTransformer([\n    (\"num\", num_pipe, num_cols),\n    (\"cat\", OneHotEncoder(handle_unknown=\"ignore\"), cat_cols),\n])\nmodell = Pipeline([(\"pre\", pre), (\"clf\", LogisticRegression())])\nmodell.fit(df[num_cols + cat_cols], df[\"kauft\"])\n\nprint(modell.predict(df[num_cols + cat_cols]))\n",
+       "hint": "Nimm das Code-Puzzle von eben als Vorlage und ergänze am Ende `modell.fit(df[num_cols + cat_cols], df[\"kauft\"])`.",
+       "tests": "assert list(modell.named_steps) == [\"pre\", \"clf\"], f\"Schritte sollten ['pre', 'clf'] heißen, sind {list(modell.named_steps)}\"\nnamen = [t[0] for t in modell[\"pre\"].transformers]\nassert \"num\" in namen and \"cat\" in namen, f\"ColumnTransformer sollte 'num' und 'cat' haben, hat {namen}\"\nneu = pd.DataFrame({\"alter\": [30], \"einkommen\": [np.nan], \"stadt\": [\"Hamburg\"]})\nassert len(modell.predict(neu)) == 1, \"Vorhersage für neue Daten klappt nicht\"\n"
+      }
+     ]
+    },
+    {
+     "id": "sklearn-5",
+     "title": "Projekt: Cross-Validation & GridSearch",
+     "project": true,
+     "vocab": [
+      "cross_val_score",
+      "GridSearchCV",
+      "param-grid-names",
+      "best_params_",
+      "best_estimator_"
+     ],
+     "intro": "Statt nur einmal zu splitten, teilt **Cross-Validation** die Trainingsdaten in z. B. 5 Teile (Folds): 5-mal trainieren, jedes Mal ein anderer Teil zum Validieren.\n\n**GridSearchCV** probiert damit alle Parameter-Kombinationen durch, also genau die verschachtelte Schleife aus der Skript-Welt, nur automatisch.\nParameter von Pipeline-Schritten sprichst du mit **zwei Unterstrichen** an: `schrittname__parameter`, z. B. `knn__n_neighbors`.\n",
+     "exercises": [
+      {
+       "type": "info",
+       "code": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import cross_val_score\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.neighbors import KNeighborsClassifier\n\nX, y = load_iris(return_X_y=True)\npipe = Pipeline([(\"scaler\", StandardScaler()), (\"knn\", KNeighborsClassifier())])\n\nscores = cross_val_score(pipe, X, y, cv=5)\nprint(scores.round(3))\nprint(\"Mittel:\", scores.mean().round(3))\n",
+       "text": "`cross_val_score` liefert einen Score pro Fold. Der Mittelwert ist robuster als ein einzelner Split.",
+       "run": true
+      },
+      {
+       "type": "mc",
+       "question": "Was bedeutet `cv=5`?",
+       "options": [
+        "Die Daten werden in 5 Teile geteilt; 5-mal wird auf 4 Teilen trainiert und auf dem 5. bewertet",
+        "Das Modell wird 5 Sekunden trainiert",
+        "5 % der Daten werden zum Testen benutzt",
+        "Es werden 5 verschiedene Modelle verglichen"
+       ],
+       "answer": 0
+      },
+      {
+       "type": "cloze",
+       "question": "Durchsuche `n_neighbors` des Pipeline-Schritts `\"knn\"` und gib die beste Kombination aus.",
+       "code": "param_grid = {\n    \"___\": [1, 3, 5, 7],\n    \"knn__weights\": [\"uniform\", \"distance\"],\n}\nsuche = GridSearchCV(pipe, param_grid, cv=5)\nsuche.fit(X_train, y_train)\nprint(suche.___)\n",
+       "answers": [
+        "knn__n_neighbors",
+        "best_params_"
+       ],
+       "distractors": [
+        "n_neighbors",
+        "knn_n_neighbors",
+        "best_score",
+        "best_params"
+       ],
+       "explain": "Schrittname + **zwei** Unterstriche + Parametername. Ergebnisse von `fit` enden mit `_`: `best_params_`, `best_score_`, `best_estimator_`."
+      },
+      {
+       "type": "mc",
+       "question": "Das Grid hat 4 × 2 = 8 Kombinationen, `cv=5`. Wie viele Trainingsläufe macht die Suche (ohne das finale Refit)?",
+       "options": [
+        "40",
+        "8",
+        "13",
+        "5"
+       ],
+       "answer": 0,
+       "explain": "Jede der 8 Kombinationen wird 5-mal trainiert: 8 × 5 = 40. Danach wird das beste Modell einmal auf allen Trainingsdaten neu trainiert (Refit)."
+      },
+      {
+       "type": "free",
+       "question": "Nach der GridSearch kennst du `best_score_`. Warum bewertest du das beste Modell trotzdem noch einmal auf dem **Test-Set**?",
+       "solution": "`best_score_` ist der beste Cross-Validation-Score unter vielen ausprobierten Kombinationen. Weil wir genau die Kombination **ausgewählt** haben, die auf diesen Folds am besten aussah, ist der Wert leicht zu optimistisch.\nDas Test-Set war an der Auswahl nicht beteiligt und liefert deshalb eine **ehrliche** Schätzung für neue Daten.\n"
+      },
+      {
+       "type": "vocab",
+       "id": "param-grid-names"
+      },
+      {
+       "type": "code",
+       "question": "**Projekt:** Finde die beste KNN-Pipeline für den Wein-Datensatz.\n\n1. Pipeline `pipe` mit `\"scaler\"` (StandardScaler) und `\"knn\"` (KNeighborsClassifier)\n2. `GridSearchCV` als `suche` über `n_neighbors` = 1, 3, 5, 7, 9 und `weights` = `\"uniform\"`, `\"distance\"`, `cv=5`\n3. Auf den Trainingsdaten fitten, beste Parameter ausgeben\n4. Test-Genauigkeit in `test_acc` speichern\n",
+       "starter": "from sklearn.datasets import load_wine\nfrom sklearn.model_selection import train_test_split, GridSearchCV\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.neighbors import KNeighborsClassifier\n\nTEST_SIZE = 0.25\nSEED = 42\n\ndef lade_daten():\n    X, y = load_wine(return_X_y=True)\n    return train_test_split(X, y, test_size=TEST_SIZE, random_state=SEED, stratify=y)\n\nX_train, X_test, y_train, y_test = lade_daten()\n\n# 1. Pipeline\n\n# 2. + 3. GridSearch\n\n# 4. Test-Genauigkeit\n",
+       "solution": "from sklearn.datasets import load_wine\nfrom sklearn.model_selection import train_test_split, GridSearchCV\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.neighbors import KNeighborsClassifier\n\nTEST_SIZE = 0.25\nSEED = 42\n\ndef lade_daten():\n    X, y = load_wine(return_X_y=True)\n    return train_test_split(X, y, test_size=TEST_SIZE, random_state=SEED, stratify=y)\n\nX_train, X_test, y_train, y_test = lade_daten()\n\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"knn\", KNeighborsClassifier()),\n])\nparam_grid = {\n    \"knn__n_neighbors\": [1, 3, 5, 7, 9],\n    \"knn__weights\": [\"uniform\", \"distance\"],\n}\nsuche = GridSearchCV(pipe, param_grid, cv=5)\nsuche.fit(X_train, y_train)\nprint(\"Beste Parameter:\", suche.best_params_)\nprint(\"CV-Score:\", round(suche.best_score_, 3))\n\ntest_acc = suche.score(X_test, y_test)\nprint(\"Test-Genauigkeit:\", round(test_acc, 3))\n",
+       "hint": "`param_grid = {\"knn__n_neighbors\": [...], \"knn__weights\": [...]}`\n`suche = GridSearchCV(pipe, param_grid, cv=5)` → `suche.fit(X_train, y_train)` → `test_acc = suche.score(X_test, y_test)`\n",
+       "tests": "from sklearn.model_selection import GridSearchCV as _G\nassert isinstance(suche, _G), \"suche sollte ein GridSearchCV-Objekt sein\"\nassert set(suche.param_grid) == {\"knn__n_neighbors\", \"knn__weights\"}, f\"param_grid-Schlüssel: {set(suche.param_grid)}. Zwei Unterstriche?\"\nassert hasattr(suche, \"best_params_\"), \"suche wurde noch nicht gefittet\"\nassert list(suche.best_estimator_.named_steps) == [\"scaler\", \"knn\"], \"Pipeline-Schritte sollten 'scaler' und 'knn' heißen\"\nassert suche.cv == 5, \"cv=5 setzen\"\nassert test_acc > 0.85, f\"test_acc = {test_acc}\"\n"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "vocab": [
+  {
+   "id": "range",
+   "term": "range(start, stop, step)",
+   "meaning": "Zahlenfolge von start bis stop-1 (stop ist nie dabei)",
+   "example": "list(range(2, 8, 2))  # [2, 4, 6]"
+  },
+  {
+   "id": "enumerate",
+   "term": "enumerate(liste)",
+   "meaning": "Liefert Paare (Position, Wert) für eine Schleife",
+   "example": "for i, name in enumerate([\"a\", \"b\"]):\n    print(i, name)"
+  },
+  {
+   "id": "zip",
+   "term": "zip(a, b)",
+   "meaning": "Läuft über mehrere Listen gleichzeitig, paarweise",
+   "example": "for f, w in zip([\"alter\", \"bmi\"], [42, 23.5]):\n    print(f, w)"
+  },
+  {
+   "id": "fstring",
+   "term": "f\"{wert:.2f}\"",
+   "meaning": "f-String: Werte in Text einsetzen, :.2f = 2 Nachkommastellen",
+   "example": "print(f\"Genauigkeit: {acc:.2f}\")"
+  },
+  {
+   "id": "dict-items",
+   "term": "d.items()",
+   "meaning": "Schlüssel-Wert-Paare eines Dicts, z. B. für Schleifen",
+   "example": "for k, v in scores.items():\n    print(k, v)"
+  },
+  {
+   "id": "dict-get",
+   "term": "d.get(key, default)",
+   "meaning": "Wert zum Schlüssel oder default, falls er fehlt (kein KeyError)",
+   "example": "zaehler[x] = zaehler.get(x, 0) + 1"
+  },
+  {
+   "id": "listcomp",
+   "term": "[ausdruck for x in liste if bedingung]",
+   "meaning": "List Comprehension: neue Liste in einer Zeile bauen und filtern",
+   "example": "gerade = [x for x in werte if x % 2 == 0]"
+  },
+  {
+   "id": "dictcomp",
+   "term": "{k: v for k, v in ...}",
+   "meaning": "Dict Comprehension: Dict in einer Zeile bauen",
+   "example": "laengen = {n: len(n) for n in namen}"
+  },
+  {
+   "id": "def-return",
+   "term": "def f(x): return ...",
+   "meaning": "Funktion definieren; return gibt das Ergebnis zurück (ohne return: None)",
+   "example": "def quadrat(x):\n    return x * x"
+  },
+  {
+   "id": "default-param",
+   "term": "def f(x, faktor=1)",
+   "meaning": "Parameter mit Standardwert, beim Aufruf optional",
+   "example": "skaliere(werte)  /  skaliere(werte, faktor=10)"
+  },
+  {
+   "id": "return-tuple",
+   "term": "return a, b",
+   "meaning": "Mehrere Werte zurückgeben (als Tupel) und direkt entpacken",
+   "example": "lo, hi = min_max(werte)"
+  },
+  {
+   "id": "break-continue",
+   "term": "break / continue",
+   "meaning": "break beendet die Schleife ganz, continue springt zum nächsten Durchlauf",
+   "example": "for w in werte:\n    if w is None:\n        continue"
+  },
+  {
+   "id": "product",
+   "term": "itertools.product(a, b)",
+   "meaning": "Alle Kombinationen aus mehreren Listen, ersetzt verschachtelte Schleifen",
+   "example": "from itertools import product\nfor tiefe, lr in product([2, 4], [0.1, 0.01]):\n    print(tiefe, lr)"
+  },
+  {
+   "id": "nested-listcomp",
+   "term": "[[... for j in b] for i in a]",
+   "meaning": "Verschachtelte Comprehension: Liste von Listen (z. B. Tabelle)",
+   "example": "[[i * j for j in range(3)] for i in range(2)]"
+  },
+  {
+   "id": "name-main",
+   "term": "if __name__ == \"__main__\":",
+   "meaning": "Code läuft nur beim direkten Start der Datei, nicht beim Import",
+   "example": "if __name__ == \"__main__\":\n    main()"
+  },
+  {
+   "id": "str-split",
+   "term": "text.split(\",\")",
+   "meaning": "Text an einem Trennzeichen in eine Liste zerlegen",
+   "example": "\"setosa,5.1\".split(\",\")  # ['setosa', '5.1']"
+  },
+  {
+   "id": "splitlines",
+   "term": "text.strip().splitlines()",
+   "meaning": "Text in Zeilen zerlegen (strip entfernt Leerzeilen am Rand)",
+   "example": "zeilen = rohtext.strip().splitlines()[1:]  # ohne Kopfzeile"
+  },
+  {
+   "id": "round-format",
+   "term": "round(x, 3)",
+   "meaning": "Zahl auf 3 Nachkommastellen runden",
+   "example": "round(0.912345, 3)  # 0.912"
+  },
+  {
+   "id": "X-y",
+   "term": "X, y",
+   "meaning": "X = Feature-Tabelle (2D: Zeilen × Spalten), y = Zielwerte (1D)",
+   "example": "X, y = load_iris(return_X_y=True)"
+  },
+  {
+   "id": "shape",
+   "term": ".shape",
+   "meaning": "Form eines Arrays/DataFrames: (Zeilen, Spalten)",
+   "example": "X.shape  # (150, 4)"
+  },
+  {
+   "id": "train_test_split",
+   "term": "train_test_split(X, y, test_size=0.2)",
+   "meaning": "Teilt Daten in Train und Test. Rückgabe: X_train, X_test, y_train, y_test",
+   "example": "from sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y)"
+  },
+  {
+   "id": "random_state",
+   "term": "random_state=42",
+   "meaning": "Fester Zufalls-Startwert: Ergebnisse sind reproduzierbar",
+   "example": "train_test_split(X, y, random_state=42)"
+  },
+  {
+   "id": "stratify",
+   "term": "stratify=y",
+   "meaning": "Klassenanteile in Train und Test gleich halten",
+   "example": "train_test_split(X, y, stratify=y)"
+  },
+  {
+   "id": "fit",
+   "term": ".fit(X, y)",
+   "meaning": "Lernen: Modell trainieren bzw. Kennzahlen eines Transformers berechnen",
+   "example": "modell.fit(X_train, y_train)"
+  },
+  {
+   "id": "transform",
+   "term": ".transform(X)",
+   "meaning": "Gelernte Umrechnung auf Daten anwenden (ohne neu zu lernen)",
+   "example": "X_test_s = scaler.transform(X_test)"
+  },
+  {
+   "id": "fit_transform",
+   "term": ".fit_transform(X)",
+   "meaning": "fit + transform in einem Schritt, nur für Trainingsdaten!",
+   "example": "X_train_s = scaler.fit_transform(X_train)"
+  },
+  {
+   "id": "predict",
+   "term": ".predict(X)",
+   "meaning": "Vorhersagen für neue Daten",
+   "example": "y_pred = modell.predict(X_test)"
+  },
+  {
+   "id": "score",
+   "term": ".score(X, y)",
+   "meaning": "Bewertung, bei Klassifikation die Genauigkeit (accuracy)",
+   "example": "modell.score(X_test, y_test)"
+  },
+  {
+   "id": "StandardScaler",
+   "term": "StandardScaler()",
+   "meaning": "Skaliert jede Spalte auf Mittelwert 0 und Standardabweichung 1",
+   "example": "from sklearn.preprocessing import StandardScaler"
+  },
+  {
+   "id": "data-leakage",
+   "term": "Data Leakage",
+   "meaning": "Infos aus Test-/Zukunftsdaten fließen ins Training, die Bewertung wird zu optimistisch",
+   "example": "# falsch: scaler.fit(X) VOR dem Split"
+  },
+  {
+   "id": "Pipeline",
+   "term": "Pipeline([(name, objekt), ...])",
+   "meaning": "Verkettet benannte Schritte (Vorverarbeitung + Modell) zu einem Objekt",
+   "example": "pipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"modell\", LogisticRegression()),\n])"
+  },
+  {
+   "id": "make_pipeline",
+   "term": "make_pipeline(a, b)",
+   "meaning": "Pipeline ohne eigene Namen; Namen = Klassenname klein",
+   "example": "make_pipeline(StandardScaler(), SVC())"
+  },
+  {
+   "id": "named_steps",
+   "term": "pipe.named_steps[\"name\"]",
+   "meaning": "Zugriff auf einen Schritt der Pipeline (auch: pipe[\"name\"])",
+   "example": "pipe.named_steps[\"scaler\"].mean_"
+  },
+  {
+   "id": "ColumnTransformer",
+   "term": "ColumnTransformer([(name, trafo, spalten), ...])",
+   "meaning": "Unterschiedliche Vorverarbeitung für verschiedene Spaltengruppen",
+   "example": "ColumnTransformer([\n    (\"num\", StandardScaler(), [\"alter\"]),\n    (\"cat\", OneHotEncoder(), [\"stadt\"]),\n])"
+  },
+  {
+   "id": "OneHotEncoder",
+   "term": "OneHotEncoder()",
+   "meaning": "Kategorien → je eine 0/1-Spalte pro Kategorie",
+   "example": "from sklearn.preprocessing import OneHotEncoder"
+  },
+  {
+   "id": "SimpleImputer",
+   "term": "SimpleImputer(strategy=\"median\")",
+   "meaning": "Füllt fehlende Werte (NaN) auf, z. B. mit dem Median",
+   "example": "from sklearn.impute import SimpleImputer"
+  },
+  {
+   "id": "handle_unknown",
+   "term": "handle_unknown=\"ignore\"",
+   "meaning": "OneHotEncoder: unbekannte Kategorien bei Vorhersage → Nullen statt Fehler",
+   "example": "OneHotEncoder(handle_unknown=\"ignore\")"
+  },
+  {
+   "id": "cross_val_score",
+   "term": "cross_val_score(modell, X, y, cv=5)",
+   "meaning": "Cross-Validation: ein Score pro Fold",
+   "example": "cross_val_score(pipe, X, y, cv=5).mean()"
+  },
+  {
+   "id": "GridSearchCV",
+   "term": "GridSearchCV(pipe, param_grid, cv=5)",
+   "meaning": "Probiert alle Parameter-Kombinationen mit Cross-Validation durch",
+   "example": "suche = GridSearchCV(pipe, param_grid, cv=5)\nsuche.fit(X_train, y_train)"
+  },
+  {
+   "id": "param-grid-names",
+   "term": "\"schritt__parameter\"",
+   "meaning": "Parameter eines Pipeline-Schritts im param_grid: zwei Unterstriche!",
+   "example": "{\"knn__n_neighbors\": [3, 5, 7]}"
+  },
+  {
+   "id": "best_params_",
+   "term": "suche.best_params_",
+   "meaning": "Beste gefundene Parameter-Kombination",
+   "example": "print(suche.best_params_)"
+  },
+  {
+   "id": "best_estimator_",
+   "term": "suche.best_estimator_",
+   "meaning": "Das mit den besten Parametern neu trainierte Modell bzw. die Pipeline",
+   "example": "suche.best_estimator_.predict(X_test)"
+  }
+ ],
+ "playground": [
+  {
+   "title": "pandas: CSV einlesen und gruppieren",
+   "code": "import io\nimport pandas as pd\n\ncsv = \"\"\"art,laenge,breite\nsetosa,5.1,3.5\nversicolor,7.0,3.2\nsetosa,4.9,3.0\nvirginica,6.3,3.3\nversicolor,6.4,3.2\nvirginica,5.8,2.7\n\"\"\"\ndf = pd.read_csv(io.StringIO(csv))\nprint(df.head())\nprint()\nprint(df.groupby(\"art\")[[\"laenge\", \"breite\"]].mean().round(2))\n"
+  },
+  {
+   "title": "SQL mit sqlite3 und Schleife",
+   "code": "import sqlite3\n\ncon = sqlite3.connect(\":memory:\")\ncur = con.cursor()\ncur.execute(\"CREATE TABLE messung (patient TEXT, tag INTEGER, wert REAL)\")\ndaten = [(\"A\", 1, 5.2), (\"A\", 2, 5.8), (\"B\", 1, 7.1), (\"B\", 2, 6.4), (\"C\", 1, 4.9)]\ncur.executemany(\"INSERT INTO messung VALUES (?, ?, ?)\", daten)\n\nfor patient, mittel, n in cur.execute(\n    \"SELECT patient, AVG(wert), COUNT(*) FROM messung GROUP BY patient ORDER BY patient\"\n):\n    print(f\"{patient}: {mittel:.2f} ({n} Messungen)\")\n"
+  },
+  {
+   "title": "SQL-Ergebnis als pandas-DataFrame",
+   "code": "import sqlite3\nimport pandas as pd\n\ncon = sqlite3.connect(\":memory:\")\npd.DataFrame({\n    \"stadt\": [\"Berlin\", \"Köln\", \"Berlin\", \"Wien\"],\n    \"umsatz\": [120, 80, 95, 60],\n}).to_sql(\"verkauf\", con, index=False)\n\ndf = pd.read_sql(\"SELECT stadt, SUM(umsatz) AS summe FROM verkauf GROUP BY stadt\", con)\nprint(df)\n"
+  },
+  {
+   "title": "scikit-learn: benannte Pipeline",
+   "code": "from sklearn.datasets import load_iris\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\nX, y = load_iris(return_X_y=True)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)\n\npipe = Pipeline([\n    (\"scaler\", StandardScaler()),\n    (\"modell\", LogisticRegression(max_iter=1000)),\n])\npipe.fit(X_train, y_train)\nprint(\"Genauigkeit:\", round(pipe.score(X_test, y_test), 3))\n"
+  },
+  {
+   "title": "matplotlib: Streudiagramm",
+   "code": "import matplotlib.pyplot as plt\nfrom sklearn.datasets import load_iris\n\nX, y = load_iris(return_X_y=True)\nplt.figure(figsize=(5, 4))\nplt.scatter(X[:, 0], X[:, 2], c=y)\nplt.xlabel(\"Kelchblatt-Länge\")\nplt.ylabel(\"Blütenblatt-Länge\")\nplt.title(\"Iris\")\nplt.show()\n"
+  },
+  {
+   "title": "numpy: Arrays und Achsen",
+   "code": "import numpy as np\n\na = np.arange(12).reshape(3, 4)\nprint(a)\nprint(\"Form:\", a.shape)\nprint(\"Spalten-Mittel:\", a.mean(axis=0))\nprint(\"Zeilen-Summe:\", a.sum(axis=1))\n"
+  }
+ ],
+ "comingSoon": [
+  "NumPy",
+  "pandas",
+  "SQL mit sqlite3",
+  "Matplotlib",
+  "Abschlussprojekte"
+ ]
+}

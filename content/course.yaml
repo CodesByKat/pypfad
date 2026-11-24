@@ -1,0 +1,11 @@
+# Reihenfolge der Welten und Inhalts-Version
+version: "1"
+worlds:
+  - 01-skript-bausteine.yaml
+  - 02-sklearn-pipelines.yaml
+comingSoon:
+  - "NumPy"
+  - "pandas"
+  - "SQL mit sqlite3"
+  - "Matplotlib"
+  - "Abschlussprojekte"

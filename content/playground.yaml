@@ -1,0 +1,83 @@
+# Beispiele fuer die Spielwiese
+- title: "pandas: CSV einlesen und gruppieren"
+  code: |
+    import io
+    import pandas as pd
+
+    csv = """art,laenge,breite
+    setosa,5.1,3.5
+    versicolor,7.0,3.2
+    setosa,4.9,3.0
+    virginica,6.3,3.3
+    versicolor,6.4,3.2
+    virginica,5.8,2.7
+    """
+    df = pd.read_csv(io.StringIO(csv))
+    print(df.head())
+    print()
+    print(df.groupby("art")[["laenge", "breite"]].mean().round(2))
+- title: "SQL mit sqlite3 und Schleife"
+  code: |
+    import sqlite3
+
+    con = sqlite3.connect(":memory:")
+    cur = con.cursor()
+    cur.execute("CREATE TABLE messung (patient TEXT, tag INTEGER, wert REAL)")
+    daten = [("A", 1, 5.2), ("A", 2, 5.8), ("B", 1, 7.1), ("B", 2, 6.4), ("C", 1, 4.9)]
+    cur.executemany("INSERT INTO messung VALUES (?, ?, ?)", daten)
+
+    for patient, mittel, n in cur.execute(
+        "SELECT patient, AVG(wert), COUNT(*) FROM messung GROUP BY patient ORDER BY patient"
+    ):
+        print(f"{patient}: {mittel:.2f} ({n} Messungen)")
+- title: "SQL-Ergebnis als pandas-DataFrame"
+  code: |
+    import sqlite3
+    import pandas as pd
+
+    con = sqlite3.connect(":memory:")
+    pd.DataFrame({
+        "stadt": ["Berlin", "Köln", "Berlin", "Wien"],
+        "umsatz": [120, 80, 95, 60],
+    }).to_sql("verkauf", con, index=False)
+
+    df = pd.read_sql("SELECT stadt, SUM(umsatz) AS summe FROM verkauf GROUP BY stadt", con)
+    print(df)
+- title: "scikit-learn: benannte Pipeline"
+  code: |
+    from sklearn.datasets import load_iris
+    from sklearn.model_selection import train_test_split
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.linear_model import LogisticRegression
+
+    X, y = load_iris(return_X_y=True)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("modell", LogisticRegression(max_iter=1000)),
+    ])
+    pipe.fit(X_train, y_train)
+    print("Genauigkeit:", round(pipe.score(X_test, y_test), 3))
+- title: "matplotlib: Streudiagramm"
+  code: |
+    import matplotlib.pyplot as plt
+    from sklearn.datasets import load_iris
+
+    X, y = load_iris(return_X_y=True)
+    plt.figure(figsize=(5, 4))
+    plt.scatter(X[:, 0], X[:, 2], c=y)
+    plt.xlabel("Kelchblatt-Länge")
+    plt.ylabel("Blütenblatt-Länge")
+    plt.title("Iris")
+    plt.show()
+- title: "numpy: Arrays und Achsen"
+  code: |
+    import numpy as np
+
+    a = np.arange(12).reshape(3, 4)
+    print(a)
+    print("Form:", a.shape)
+    print("Spalten-Mittel:", a.mean(axis=0))
+    print("Zeilen-Summe:", a.sum(axis=1))
