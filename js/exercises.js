@@ -61,6 +61,7 @@ function mc(ex, ctx) {
   });
   return {
     el,
+    snapshot: () => [...chosen].map((i) => ex.options[i]).join(' | '),
     check() {
       const right = new Set(multi ? ex.answer : [ex.answer]);
       el.querySelectorAll('.option').forEach((o) => {
@@ -120,6 +121,7 @@ function cloze(ex, ctx) {
   paint();
   return {
     el,
+    snapshot: () => fill.map((f) => (f == null ? '___' : tokens[f])).join(' | '),
     check() {
       let ok = true;
       blanks.forEach((b, i) => {
@@ -190,6 +192,7 @@ function parsons(ex, ctx) {
   paint();
   return {
     el,
+    snapshot: () => sol.map((s) => '    '.repeat(s.indent) + pool[s.p]).join('\n'),
     check() {
       const rows = [...solEl.querySelectorAll('.pline')];
       let ok = sol.length === target.length;
@@ -216,6 +219,7 @@ function predict(ex, ctx) {
   ta.oninput = () => ctx.setReady(ta.value.trim().length > 0);
   return {
     el,
+    snapshot: () => ta.value,
     check() {
       const given = normalizeOutput(ta.value);
       const want = normalizeOutput(ex.answer);
@@ -254,6 +258,7 @@ function code(ex, ctx) {
   let fails = 0;
   return {
     el,
+    snapshot: () => ed.value + (out.textContent ? '\n\n# Ausgabe:\n' + out.textContent : ''),
     async check() {
       out.innerHTML = '<span class="muted">Python prüft deinen Code …</span>';
       const res = await py.run(ed.value, { tests: ex.tests || '', setup: ex.setup || '', onStatus: (t) => (out.innerHTML = `<span class="muted">${esc(t)}</span>`) });
@@ -295,6 +300,7 @@ function free(ex, ctx) {
   ta.oninput = () => ctx.setReady(ta.value.trim().length > 3);
   return {
     el,
+    snapshot: () => ta.value,
     check() {
       ta.disabled = true;
       return { selfAssess: true, solution: `<p><b>Musterantwort:</b></p>${md(ex.solution)}` };

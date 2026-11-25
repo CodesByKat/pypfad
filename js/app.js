@@ -3,6 +3,7 @@ import * as P from './progress.js';
 import * as py from './python.js';
 import { renderExercise } from './exercises.js';
 import { createEditor, renderOutput } from './editor.js';
+import * as R from './report.js';
 
 const view = document.getElementById('view');
 let course = null;
@@ -113,13 +114,29 @@ function runLesson({ world, lesson }) {
   const started = Date.now();
 
   view.innerHTML = '';
-  const top = h(`<div class="lesson-top"><button class="icon-btn" aria-label="Lektion verlassen">✕</button><div class="bar"><i style="width:0%"></i></div></div>`);
+  const top = h(`<div class="lesson-top"><button class="icon-btn" aria-label="Lektion verlassen">✕</button><div class="bar"><i style="width:0%"></i></div><button class="icon-btn flag" aria-label="Fehler melden" title="Fehler melden">🚩</button></div>`);
   const body = h('<div class="lesson-body"></div>');
   const footer = h('<div class="footer"><div class="footer-inner"></div></div>');
   view.append(top, body);
   document.body.appendChild(footer);
   cleanup = () => footer.remove();
   top.querySelector('button').onclick = () => { location.hash = '#/'; };
+  let current = null; // { item, r, result }
+  top.querySelector('.flag').onclick = () => {
+    const base = `${lesson.id} · ${lesson.title}`;
+    if (!current) return R.openSheet({ where: base, version: course.version });
+    const ex = current.item.ex;
+    const idx = lesson.exercises.indexOf(ex) + 1;
+    let snap = '';
+    try { snap = current.r.snapshot ? current.r.snapshot() : ''; } catch (_) {}
+    R.openSheet({
+      where: `${base} · Aufgabe ${idx}/${lesson.exercises.length} (${ex.type})`,
+      question: questionText(ex),
+      answer: snap,
+      result: current.result || 'noch nicht geprüft',
+      version: course.version,
+    });
+  };
   const fi = footer.querySelector('.footer-inner');
 
   function progress() {
@@ -154,6 +171,7 @@ function runLesson({ world, lesson }) {
     checkBtn = h(`<button class="btn primary block" ${item.ex.type === 'info' ? '' : 'disabled'}>${item.ex.type === 'info' ? 'Weiter' : 'Prüfen'}</button>`);
     fi.appendChild(checkBtn);
     const r = renderExercise(item.ex, ctx);
+    current = { item, r, result: null };
     body.innerHTML = '';
     if (item.retry) body.appendChild(h('<p class="muted small">🔁 Nochmal zur Wiederholung</p>'));
     body.appendChild(r.el);
@@ -168,7 +186,7 @@ function runLesson({ world, lesson }) {
       if (locked) return;
       checkBtn.disabled = true;
       const res = await r.check();
-      if (res.retry) { checkBtn.disabled = false; checkBtn.textContent = 'Nochmal prüfen'; return; }
+      if (res.retry) { current.result = 'Tests nicht bestanden'; checkBtn.disabled = false; checkBtn.textContent = 'Nochmal prüfen'; return; }
       locked = true;
       if (res.selfAssess) return selfAssess(res, item);
       const first = res.firstTry ?? true;
@@ -185,6 +203,7 @@ function runLesson({ world, lesson }) {
 
   function feedback(correct, res, item, xp, first) {
     award(correct, item, xp, first);
+    if (current) current.result = correct ? 'als richtig gewertet' : 'als falsch gewertet';
     const ex = item.ex;
     footer.className = 'footer ' + (correct ? 'good' : 'bad');
     fi.innerHTML = '';
@@ -211,6 +230,7 @@ function runLesson({ world, lesson }) {
   }
 
   function finish() {
+    current = null;
     const accuracy = graded ? firstTryRight / graded : 1;
     const bonus = 20 + (accuracy >= 0.95 ? 10 : 0);
     P.addXp(bonus);
@@ -241,6 +261,14 @@ function runLesson({ world, lesson }) {
   }
 
   intro();
+}
+
+function questionText(ex) {
+  if (ex.type === 'vocab') {
+    const v = course.vocab.find((x) => x.id === ex.id);
+    return v ? `Vokabel ${v.id}: ${v.term} = ${v.meaning}` : `Vokabel ${ex.id}`;
+  }
+  return [ex.question, ex.text, ex.code].filter(Boolean).join('\n\n');
 }
 
 /* ---------------- Vokabeln ---------------- */
@@ -298,13 +326,14 @@ function vocabSession() {
     const v = vocabById(id);
     if (!v) return next();
     const el = h(`<div>
-      <p class="muted small">Noch ${queue.length + 1} Karten · Tippe auf die Karte zum Umdrehen</p>
+      <div class="row"><p class="muted small" style="margin:0">Noch ${queue.length + 1} Karten · Tippe auf die Karte zum Umdrehen</p><span class="spacer"></span><button class="icon-btn flag" aria-label="Fehler melden" title="Fehler melden">🚩</button></div>
       <div class="flash"><div><div class="term">${esc(v.term)}</div><div class="back" hidden><div class="meaning">${esc(v.meaning)}</div>${v.example ? codeBlock(v.example) : ''}</div></div></div>
       <div class="row" style="margin-top:16px"><button class="btn block reveal">Umdrehen</button></div>
       <div class="row rate" style="margin-top:16px" hidden><button class="btn" style="flex:1">🔁 Nochmal</button><button class="btn primary" style="flex:1">✔ Gewusst</button></div>
     </div>`);
     const reveal = () => { el.querySelector('.back').hidden = false; el.querySelector('.reveal').parentElement.hidden = true; el.querySelector('.rate').hidden = false; };
     el.querySelector('.flash').onclick = reveal;
+    el.querySelector('.flag').onclick = () => R.openSheet({ where: `Vokabel ${v.id}`, question: `${v.term}\n= ${v.meaning}\n\n${v.example || ''}`.trim(), version: course.version });
     el.querySelector('.reveal').onclick = reveal;
     const [again, ok] = el.querySelectorAll('.rate button');
     again.onclick = () => { P.rateCard(id, false); queue.push(id); next(); };
@@ -441,8 +470,44 @@ function profile() {
     setTimeout(() => { delete rb.dataset.armed; rb.textContent = 'Fortschritt zurücksetzen'; }, 4000);
   };
 
+  const reports = R.list();
+  const rep = h(`<section class="card"><h2>🚩 Meldungen (${reports.length})</h2>
+    ${reports.length ? `<p class="muted small">Gemeldete Fehler, gespeichert auf diesem Gerät. Schick sie mir, sobald du online bist: als GitHub-Issue, geteilt/kopiert oder als Datei.</p>
+    <div class="replist"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn share">Alle teilen / kopieren</button>
+      <button class="btn file">Als Datei speichern</button>
+      <button class="btn ghost clear" style="color:var(--bad)">Alle löschen</button>
+    </div>` : '<p class="muted small">Noch keine Meldungen. In jeder Aufgabe kannst du oben rechts mit 🚩 einen Fehler melden, auch offline.</p>'}
+  </section>`);
+  const rl = rep.querySelector('.replist');
+  if (rl) {
+    reports.slice().reverse().forEach((r) => {
+      const item = h(`<details style="border-bottom:1px solid var(--border);padding:8px 0">
+        <summary><b>${esc(r.reason)}</b> <span class="muted small">· ${esc(r.where)}</span></summary>
+        <pre class="output" style="display:block">${esc(R.toText(r))}</pre>
+        <div class="row" style="margin-top:8px">
+          <a class="btn sm" target="_blank" rel="noopener" href="${esc(R.issueUrl(r))}">Auf GitHub melden</a>
+          <button class="btn sm one">Teilen / kopieren</button>
+          <button class="btn sm ghost del">Erledigt ✓</button>
+        </div></details>`);
+      item.querySelector('.one').onclick = () => R.share(R.toText(r));
+      item.querySelector('.del').onclick = () => { R.remove(r.id); route(); };
+      rl.appendChild(item);
+    });
+    rep.querySelector('.share').onclick = () => R.share(R.allText());
+    rep.querySelector('.file').onclick = () => R.download();
+    const cb = rep.querySelector('.clear');
+    cb.onclick = () => {
+      if (cb.dataset.armed) { R.clear(); toast('Meldungen gelöscht'); route(); return; }
+      cb.dataset.armed = '1';
+      cb.textContent = 'Wirklich löschen? Nochmal tippen';
+      setTimeout(() => { delete cb.dataset.armed; cb.textContent = 'Alle löschen'; }, 4000);
+    };
+  }
+
   const about = h(`<section class="card small muted">PyPfad · Inhalte v${esc(course.version || '?')} · Kostenlos, ohne Abo, ohne Leben, ohne Werbung.</section>`);
-  view.append(stats, off, install, backup, about);
+  view.append(stats, rep, off, install, backup, about);
 }
 
 boot();

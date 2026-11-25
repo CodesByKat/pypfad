@@ -294,3 +294,14 @@ textarea.code {
 
 [hidden] { display: none !important; }
 .result-stats div { text-align: center; }
+
+/* Melde-Fenster */
+.overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; justify-content: center; }
+.sheet {
+  background: var(--surface); width: 100%; max-width: 560px; max-height: 90dvh; overflow: auto;
+  border-radius: 18px 18px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+}
+@media (min-width: 700px) { .overlay { align-items: center; } .sheet { border-radius: 18px; } }
+.chip.reason { font-family: inherit; font-size: .9rem; min-height: 40px; padding: 8px 12px; }
+.chip.reason.selected { border-color: var(--primary); background: var(--primary-soft); }
+.lesson-top .flag { font-size: 1.1rem; }
