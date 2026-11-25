@@ -67,7 +67,10 @@ lessons:
                   summe += wert
           print(summe)
         distractors: ["return summe"]
-        explain: "`summe = 0` steht **vor** der Schleife, `print` **danach** (nicht eingerückt), sonst würde bei jedem Durchlauf gedruckt."
+        explain: |
+          `summe = 0` steht **vor** der Schleife, `print` **danach** (nicht eingerückt), sonst würde bei jedem Durchlauf gedruckt.
+
+          `return summe` ist eine **Ablenkung** und gehört nirgendwo hin: `return` darf nur **innerhalb einer Funktion** (`def ...:`) stehen. Hier gibt es keine Funktion, Python würde mit `SyntaxError: 'return' outside function` abbrechen. Um das Ergebnis zu sehen, reicht `print(summe)`.
 
       - type: code
         question: |
@@ -224,7 +227,10 @@ lessons:
                   summe += w
               return summe / len(werte)
         distractors: ["print(summe / len(werte))"]
-        explain: "`return` steht nach der Schleife auf Funktions-Ebene, sonst würde die Funktion schon nach dem ersten Wert enden."
+        explain: |
+          `return` steht nach der Schleife auf Funktions-Ebene, sonst würde die Funktion schon nach dem ersten Wert enden.
+
+          `print(summe / len(werte))` ist eine **Ablenkung**: Die Funktion soll den Mittelwert **zurückgeben**, nicht nur anzeigen. Mit `print` statt `return` käme beim Aufruf `None` heraus.
 
       - type: free
         question: "Erkläre in eigenen Worten: Was ist der Unterschied zwischen `print(...)` und `return ...` in einer Funktion?"

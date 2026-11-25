@@ -1,5 +1,5 @@
 {
- "version": "1",
+ "version": "1.1",
  "worlds": [
   {
    "id": "skript",
@@ -73,7 +73,7 @@
        "distractors": [
         "return summe"
        ],
-       "explain": "`summe = 0` steht **vor** der Schleife, `print` **danach** (nicht eingerückt), sonst würde bei jedem Durchlauf gedruckt."
+       "explain": "`summe = 0` steht **vor** der Schleife, `print` **danach** (nicht eingerückt), sonst würde bei jedem Durchlauf gedruckt.\n\n`return summe` ist eine **Ablenkung** und gehört nirgendwo hin: `return` darf nur **innerhalb einer Funktion** (`def ...:`) stehen. Hier gibt es keine Funktion, Python würde mit `SyntaxError: 'return' outside function` abbrechen. Um das Ergebnis zu sehen, reicht `print(summe)`.\n"
       },
       {
        "type": "code",
@@ -231,7 +231,7 @@
        "distractors": [
         "print(summe / len(werte))"
        ],
-       "explain": "`return` steht nach der Schleife auf Funktions-Ebene, sonst würde die Funktion schon nach dem ersten Wert enden."
+       "explain": "`return` steht nach der Schleife auf Funktions-Ebene, sonst würde die Funktion schon nach dem ersten Wert enden.\n\n`print(summe / len(werte))` ist eine **Ablenkung**: Die Funktion soll den Mittelwert **zurückgeben**, nicht nur anzeigen. Mit `print` statt `return` käme beim Aufruf `None` heraus.\n"
       },
       {
        "type": "free",
@@ -644,7 +644,7 @@
        "distractors": [
         "pipe.fit(X_test, y_test)"
        ],
-       "explain": "Gefittet wird auf **Train**, vorhergesagt auf **Test**. Die Schritt-Tupel sind innerhalb der Liste eingerückt."
+       "explain": "Gefittet wird auf **Train**, vorhergesagt auf **Test**. Die Schritt-Tupel sind innerhalb der Liste eingerückt.\n\n`pipe.fit(X_test, y_test)` ist eine **Ablenkung**: Auf Testdaten zu trainieren wäre Data Leakage. Die Testdaten dienen nur der Bewertung.\n"
       },
       {
        "type": "mc",

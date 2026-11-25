@@ -1,7 +1,7 @@
 // Service Worker: macht die App offline-faehig.
 // App-Dateien: sofort aus dem Cache, im Hintergrund aktualisieren.
 // Python (Pyodide) und Bibliotheken: einmal laden, dann dauerhaft aus dem Cache.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const APP_CACHE = 'pypfad-app-' + VERSION;
 const PY_CACHE = 'pypfad-pyodide';
 const SHELL = [

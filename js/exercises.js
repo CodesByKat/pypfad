@@ -151,7 +151,7 @@ function parsons(ex, ctx) {
   const el = shell(ex, `
     <div class="zone-label">Dein Code (⇤ ⇥ zum Einrücken, ✕ zum Entfernen)</div>
     <div class="parsons-zone solution"></div>
-    <div class="zone-label">Bausteine (antippen zum Einfügen)</div>
+    <div class="zone-label">Bausteine (antippen zum Einfügen)${ex.distractors && ex.distractors.length ? ' · Achtung: nicht alle werden gebraucht!' : ''}</div>
     <div class="parsons-zone pool"></div>`);
   const solEl = el.querySelector('.solution');
   const poolEl = el.querySelector('.pool');
@@ -201,7 +201,11 @@ function parsons(ex, ctx) {
         rows[k].classList.add(r ? 'right' : 'wrong');
         ok = ok && r;
       });
-      return { correct: ok, solution: ok ? null : codeBlock(ex.code) };
+      const used = [...new Set(sol.map((x) => pool[x.p]).filter((t) => (ex.distractors || []).includes(t)))];
+      const note = used.length
+        ? `<p>⚠️ ${used.map((t) => `<code>${esc(t)}</code>`).join(', ')} ${used.length > 1 ? 'gehören' : 'gehört'} nicht in die Lösung (Ablenkung).</p>`
+        : '';
+      return { correct: ok, solution: ok ? null : note + '<p>Richtige Lösung:</p>' + codeBlock(ex.code) };
     },
   };
 }

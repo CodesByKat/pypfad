@@ -311,7 +311,10 @@ lessons:
           y_pred = pipe.predict(X_test)
           print(accuracy_score(y_test, y_pred))
         distractors: ["pipe.fit(X_test, y_test)"]
-        explain: "Gefittet wird auf **Train**, vorhergesagt auf **Test**. Die Schritt-Tupel sind innerhalb der Liste eingerückt."
+        explain: |
+          Gefittet wird auf **Train**, vorhergesagt auf **Test**. Die Schritt-Tupel sind innerhalb der Liste eingerückt.
+
+          `pipe.fit(X_test, y_test)` ist eine **Ablenkung**: Auf Testdaten zu trainieren wäre Data Leakage. Die Testdaten dienen nur der Bewertung.
 
       - type: mc
         question: "Wie kommst du an den Schritt `\"knn\"` der Pipeline `pipe`?"
